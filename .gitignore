@@ -1,0 +1,21 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno (nunca subir claves)
+.env
+.env.local
+
+# Builds
+frontend/dist/
+backend/dist/
+
+# Archivos de audio subidos durante pruebas
+backend/uploads/
+
+# Logs y archivos del sistema
+*.log
+.DS_Store
+
+# Editores
+.vscode/
+.idea/
