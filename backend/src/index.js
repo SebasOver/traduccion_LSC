@@ -1,8 +1,8 @@
 // Punto de entrada del backend del traductor LSC.
-// El endpoint POST /traducir se implementará en el paso 2.
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import traducirRouter from './routes/traducir.js';
 
 dotenv.config();
 
@@ -16,6 +16,9 @@ app.use(express.json());
 app.get('/salud', (req, res) => {
   res.json({ estado: 'ok', servicio: 'traduccion-lsc-backend' });
 });
+
+// Traducción de texto a secuencia de señas LSC
+app.use('/traducir', traducirRouter);
 
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);

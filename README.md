@@ -72,10 +72,71 @@ npm run dev            # http://localhost:5173
 El frontend redirige las peticiones que empiezan por `/api` al backend
 (configurado en `vite.config.js`), por lo que ambos deben estar corriendo.
 
+## API
+
+### `POST /traducir`
+
+Recibe texto en español y devuelve la secuencia de señas LSC a reproducir.
+
+```bash
+curl -X POST http://localhost:3001/traducir \
+  -H 'Content-Type: application/json' \
+  -d '{"texto": "El profesor dejó una tarea"}'
+```
+
+Respuesta (resumida):
+
+```json
+{
+  "textoOriginal": "El profesor dejó una tarea",
+  "glosas": "PROFESOR TAREA",
+  "resultado": [
+    { "palabra": "El", "estado": "omitida" },
+    { "palabra": "profesor", "estado": "traducida", "glosa": "PROFESOR",
+      "animacion": "LSC_profesor", "duracion": 1.6 },
+    { "palabra": "dejó", "estado": "desconocida" },
+    { "palabra": "una", "estado": "omitida" },
+    { "palabra": "tarea", "estado": "traducida", "glosa": "TAREA",
+      "animacion": "LSC_tarea", "duracion": 1.5 }
+  ],
+  "secuencia": [
+    { "glosa": "PROFESOR", "animacion": "LSC_profesor", "duracion": 1.6 },
+    { "glosa": "TAREA", "animacion": "LSC_tarea", "duracion": 1.5 }
+  ]
+}
+```
+
+Estados posibles de cada palabra:
+
+- `traducida`: existe una seña en el diccionario (búsqueda con normalización de
+  tildes, plurales simples y sinónimos).
+- `omitida`: palabra funcional (artículos, preposiciones…) que la LSC no seña.
+- `desconocida`: sin entrada en el diccionario (a futuro: dactilología/deletreo).
+
+## Diccionario LSC
+
+`backend/src/data/diccionario_lsc.json` contiene el vocabulario académico de
+ejemplo (10 señas: tarea, examen, profesor, estudiante, universidad, clase,
+estudiar, aprender, libro, pregunta). Cada entrada define la glosa, el ID del
+clip de animación, su duración y sinónimos aceptados.
+
+## Avatar 3D
+
+Mientras no exista el modelo definitivo, `Avatar3D.jsx` renderiza un avatar
+placeholder hecho con primitivas que ejecuta un gesto procedural distinto por
+cada ID de animación. Cuando el modelo de MakeHuman/Blender esté listo:
+
+1. Exportarlo con sus clips de animación a `frontend/public/modelos/avatar.glb`
+   (los clips deben llamarse igual que los IDs del diccionario, ej. `LSC_tarea`).
+2. En `EscenaAvatar.jsx`, reemplazar `<Avatar3D />` por `<AvatarGLTF />`
+   (componente ya preparado con `useGLTF` + `useAnimations`).
+
 ## Hoja de ruta del prototipo
 
 - [x] Estructura inicial del proyecto
-- [ ] Endpoint `POST /traducir`: recibe texto y devuelve secuencia de IDs de animación
-- [ ] Avatar GLTF en el frontend que reproduce las animaciones recibidas
-- [ ] Diccionario LSC de ejemplo con vocabulario académico (10 palabras)
+- [x] Endpoint `POST /traducir`: recibe texto y devuelve secuencia de IDs de animación
+- [x] Diccionario LSC de ejemplo con vocabulario académico (10 palabras)
+- [x] Frontend React + Three.js con avatar placeholder que reproduce la secuencia
+- [ ] Reemplazar el placeholder por el avatar GLTF de MakeHuman/Blender
 - [ ] Reconocimiento de voz con Whisper (audio → texto → señas)
+- [ ] Dactilología (deletreo) para palabras fuera del diccionario
