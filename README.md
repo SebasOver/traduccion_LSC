@@ -113,6 +113,22 @@ Estados posibles de cada palabra:
 - `omitida`: palabra funcional (artículos, preposiciones…) que la LSC no seña.
 - `desconocida`: sin entrada en el diccionario (a futuro: dactilología/deletreo).
 
+### `POST /traducir/audio`
+
+Recibe un archivo de audio (campo multipart `audio`, máx. 25 MB), lo transcribe
+a texto con Whisper (API de OpenAI) y devuelve la misma estructura que
+`POST /traducir` más el campo `textoTranscrito`. Requiere `OPENAI_API_KEY` en
+el `.env` del backend; sin ella responde 503 con un mensaje explicativo.
+
+```bash
+curl -X POST http://localhost:3001/traducir/audio -F "audio=@grabacion.webm"
+```
+
+En el frontend, el botón «🎤 Hablar» graba desde el micrófono con la API
+MediaRecorder del navegador y envía el audio a este endpoint al detener la
+grabación. El navegador pedirá permiso de micrófono (requiere HTTPS o
+localhost).
+
 ## Diccionario LSC
 
 `backend/src/data/diccionario_lsc.json` contiene el vocabulario académico de
@@ -137,6 +153,6 @@ cada ID de animación. Cuando el modelo de MakeHuman/Blender esté listo:
 - [x] Endpoint `POST /traducir`: recibe texto y devuelve secuencia de IDs de animación
 - [x] Diccionario LSC de ejemplo con vocabulario académico (10 palabras)
 - [x] Frontend React + Three.js con avatar placeholder que reproduce la secuencia
+- [x] Reconocimiento de voz con Whisper (audio → texto → señas)
 - [ ] Reemplazar el placeholder por el avatar GLTF de MakeHuman/Blender
-- [ ] Reconocimiento de voz con Whisper (audio → texto → señas)
 - [ ] Dactilología (deletreo) para palabras fuera del diccionario

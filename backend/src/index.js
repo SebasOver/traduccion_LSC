@@ -20,6 +20,14 @@ app.get('/salud', (req, res) => {
 // Traducción de texto a secuencia de señas LSC
 app.use('/traducir', traducirRouter);
 
+// Errores de subida de archivos (ej. audio demasiado grande)
+app.use((error, req, res, next) => {
+  if (error?.name === 'MulterError') {
+    return res.status(400).json({ error: `Error al recibir el audio: ${error.message}` });
+  }
+  return next(error);
+});
+
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });

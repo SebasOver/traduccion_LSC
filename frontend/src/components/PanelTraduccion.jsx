@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useGrabadorAudio } from '../hooks/useGrabadorAudio.js';
 
 const ETIQUETA_ESTADO = {
   traducida: 'Traducida a seña',
@@ -6,9 +7,10 @@ const ETIQUETA_ESTADO = {
   desconocida: 'Sin seña en el diccionario',
 };
 
-// Panel de entrada de texto y visualización del resultado de la traducción.
-export default function PanelTraduccion({ onTraducir, traduccion, error, cargando }) {
+// Panel de entrada (texto escrito o voz) y visualización del resultado.
+export default function PanelTraduccion({ onTraducir, onTraducirAudio, traduccion, error, cargando }) {
   const [texto, setTexto] = useState('');
+  const { grabando, iniciar, detener, errorMicrofono } = useGrabadorAudio(onTraducirAudio);
 
   function manejarEnvio(evento) {
     evento.preventDefault();
@@ -26,15 +28,34 @@ export default function PanelTraduccion({ onTraducir, traduccion, error, cargand
           onChange={(e) => setTexto(e.target.value)}
           placeholder='Ej.: "El profesor dejó una tarea para los estudiantes"'
         />
-        <button type="submit" disabled={cargando || !texto.trim()}>
-          {cargando ? 'Traduciendo…' : 'Traducir a LSC'}
-        </button>
+        <div className="botones-entrada">
+          <button type="submit" disabled={cargando || grabando || !texto.trim()}>
+            {cargando ? 'Traduciendo…' : 'Traducir a LSC'}
+          </button>
+          <button
+            type="button"
+            className={grabando ? 'boton-microfono grabando' : 'boton-microfono'}
+            onClick={grabando ? detener : iniciar}
+            disabled={cargando}
+          >
+            {grabando ? '⏹ Detener y traducir' : '🎤 Hablar'}
+          </button>
+        </div>
       </form>
 
-      {error && <p className="mensaje-error" role="alert">{error}</p>}
+      {(error || errorMicrofono) && (
+        <p className="mensaje-error" role="alert">{error ?? errorMicrofono}</p>
+      )}
 
       {traduccion && (
         <div className="resultado">
+          {traduccion.textoTranscrito && (
+            <>
+              <h2>Texto reconocido (Whisper)</h2>
+              <p className="texto-transcrito">«{traduccion.textoTranscrito}»</p>
+            </>
+          )}
+
           <h2>Glosas LSC</h2>
           <p className="glosas">{traduccion.glosas || '(ninguna seña encontrada)'}</p>
 
