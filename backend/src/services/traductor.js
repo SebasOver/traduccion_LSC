@@ -50,11 +50,36 @@ function buscarSena(palabraNormalizada) {
   return null;
 }
 
+// Cifras escritas con dígitos: "5" se traduce como la seña de "cinco";
+// los números mayores a 10 se señan dígito a dígito ("25" → DOS CINCO)
+const PALABRA_DIGITO = ['cero', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez'];
+
+function traducirNumero(token, resultado) {
+  const valor = Number(token);
+  const digitos = valor >= 0 && valor <= 10 ? [valor] : [...token].map(Number);
+
+  for (const digito of digitos) {
+    const sena = buscarSena(PALABRA_DIGITO[digito]);
+    resultado.push({
+      palabra: digitos.length === 1 ? token : String(digito),
+      estado: 'traducida',
+      glosa: sena.glosa,
+      animacion: sena.animacion,
+      duracion: sena.duracion,
+    });
+  }
+}
+
 export function traducir(texto) {
-  const tokens = texto.match(/[a-záéíóúüñ]+/gi) ?? [];
+  const tokens = texto.match(/[a-záéíóúüñ]+|[0-9]+/gi) ?? [];
   const resultado = [];
 
   for (const token of tokens) {
+    if (/^[0-9]+$/.test(token)) {
+      traducirNumero(token, resultado);
+      continue;
+    }
+
     const normalizada = normalizar(token);
 
     if (PALABRAS_OMITIDAS.has(normalizada)) {

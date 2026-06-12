@@ -1,67 +1,358 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "lengua": "Lengua de Señas Colombiana (LSC)",
-  "descripcion": "Diccionario de ejemplo con vocabulario académico. Cada entrada mapea una palabra en español a la animación de la seña LSC correspondiente. 'glosa' es la transcripción convencional de la seña; 'duracion' es la duración aproximada del clip en segundos.",
+  "ambito": "Clase de matemáticas básicas (primaria / secundaria), más vocabulario académico general de aula",
+  "descripcion": "Cada entrada mapea una palabra en español a la animación de la seña LSC correspondiente. 'glosa' es la transcripción convencional de la seña; 'duracion' es la duración aproximada del clip en segundos; 'sinonimos' son otras palabras del español que se traducen con la misma seña; 'categoria' agrupa el vocabulario por tema.",
+  "categorias": [
+    "academico_general",
+    "matematicas",
+    "numeros"
+  ],
   "senas": {
     "tarea": {
       "animacion": "LSC_tarea",
       "glosa": "TAREA",
       "duracion": 1.5,
-      "sinonimos": ["deber", "deberes"]
+      "categoria": "academico_general",
+      "sinonimos": [
+        "deber",
+        "deberes"
+      ]
     },
     "examen": {
       "animacion": "LSC_examen",
       "glosa": "EXAMEN",
       "duracion": 1.8,
-      "sinonimos": ["parcial", "evaluacion", "prueba"]
+      "categoria": "academico_general",
+      "sinonimos": [
+        "parcial",
+        "evaluación",
+        "prueba",
+        "quiz"
+      ]
     },
     "profesor": {
       "animacion": "LSC_profesor",
       "glosa": "PROFESOR",
       "duracion": 1.6,
-      "sinonimos": ["maestro", "docente", "profesora"]
+      "categoria": "academico_general",
+      "sinonimos": [
+        "maestro",
+        "docente",
+        "profesora",
+        "maestra"
+      ]
     },
     "estudiante": {
       "animacion": "LSC_estudiante",
       "glosa": "ESTUDIANTE",
       "duracion": 1.7,
-      "sinonimos": ["alumno", "alumna"]
+      "categoria": "academico_general",
+      "sinonimos": [
+        "alumno",
+        "alumna"
+      ]
     },
     "universidad": {
       "animacion": "LSC_universidad",
       "glosa": "UNIVERSIDAD",
       "duracion": 2.0,
-      "sinonimos": []
+      "categoria": "academico_general",
+      "sinonimos": [
+        "colegio",
+        "escuela"
+      ]
     },
     "clase": {
       "animacion": "LSC_clase",
       "glosa": "CLASE",
       "duracion": 1.4,
-      "sinonimos": ["leccion"]
+      "categoria": "academico_general",
+      "sinonimos": [
+        "lección"
+      ]
     },
     "estudiar": {
       "animacion": "LSC_estudiar",
       "glosa": "ESTUDIAR",
       "duracion": 1.8,
-      "sinonimos": ["estudio", "estudiamos"]
+      "categoria": "academico_general",
+      "sinonimos": [
+        "estudio",
+        "estudiamos",
+        "repasar",
+        "estudien"
+      ]
     },
     "aprender": {
       "animacion": "LSC_aprender",
       "glosa": "APRENDER",
       "duracion": 1.7,
-      "sinonimos": ["aprendo", "aprendemos"]
+      "categoria": "academico_general",
+      "sinonimos": [
+        "aprendo",
+        "aprendemos",
+        "entender",
+        "comprender"
+      ]
     },
     "libro": {
       "animacion": "LSC_libro",
       "glosa": "LIBRO",
       "duracion": 1.3,
-      "sinonimos": ["texto"]
+      "categoria": "academico_general",
+      "sinonimos": [
+        "texto",
+        "cuaderno"
+      ]
     },
     "pregunta": {
       "animacion": "LSC_pregunta",
       "glosa": "PREGUNTA",
       "duracion": 1.5,
-      "sinonimos": ["preguntar", "duda"]
+      "categoria": "academico_general",
+      "sinonimos": [
+        "preguntar",
+        "duda"
+      ]
+    },
+    "matemáticas": {
+      "animacion": "LSC_matematicas",
+      "glosa": "MATEMÁTICAS",
+      "duracion": 1.8,
+      "categoria": "matematicas",
+      "sinonimos": [
+        "matemática",
+        "mate"
+      ]
+    },
+    "número": {
+      "animacion": "LSC_numero",
+      "glosa": "NÚMERO",
+      "duracion": 1.4,
+      "categoria": "matematicas",
+      "sinonimos": [
+        "cifra"
+      ]
+    },
+    "sumar": {
+      "animacion": "LSC_sumar",
+      "glosa": "SUMAR",
+      "duracion": 1.5,
+      "categoria": "matematicas",
+      "sinonimos": [
+        "suma",
+        "más",
+        "agregar",
+        "sumen",
+        "sumemos"
+      ]
+    },
+    "restar": {
+      "animacion": "LSC_restar",
+      "glosa": "RESTAR",
+      "duracion": 1.5,
+      "categoria": "matematicas",
+      "sinonimos": [
+        "resta",
+        "menos",
+        "quitar",
+        "resten",
+        "restemos"
+      ]
+    },
+    "multiplicar": {
+      "animacion": "LSC_multiplicar",
+      "glosa": "MULTIPLICAR",
+      "duracion": 1.6,
+      "categoria": "matematicas",
+      "sinonimos": [
+        "multiplicación",
+        "multiplica",
+        "multipliquen"
+      ]
+    },
+    "dividir": {
+      "animacion": "LSC_dividir",
+      "glosa": "DIVIDIR",
+      "duracion": 1.6,
+      "categoria": "matematicas",
+      "sinonimos": [
+        "división",
+        "dividido",
+        "repartir",
+        "dividan"
+      ]
+    },
+    "igual": {
+      "animacion": "LSC_igual",
+      "glosa": "IGUAL",
+      "duracion": 1.3,
+      "categoria": "matematicas",
+      "sinonimos": [
+        "iguales",
+        "equivale",
+        "da"
+      ]
+    },
+    "resultado": {
+      "animacion": "LSC_resultado",
+      "glosa": "RESULTADO",
+      "duracion": 1.5,
+      "categoria": "matematicas",
+      "sinonimos": [
+        "respuesta",
+        "solución",
+        "total"
+      ]
+    },
+    "problema": {
+      "animacion": "LSC_problema",
+      "glosa": "PROBLEMA",
+      "duracion": 1.5,
+      "categoria": "matematicas",
+      "sinonimos": [
+        "operación"
+      ]
+    },
+    "ejercicio": {
+      "animacion": "LSC_ejercicio",
+      "glosa": "EJERCICIO",
+      "duracion": 1.6,
+      "categoria": "matematicas",
+      "sinonimos": [
+        "actividad",
+        "práctica",
+        "taller"
+      ]
+    },
+    "calcular": {
+      "animacion": "LSC_calcular",
+      "glosa": "CALCULAR",
+      "duracion": 1.6,
+      "categoria": "matematicas",
+      "sinonimos": [
+        "cálculo",
+        "calcula",
+        "cuenta",
+        "contar",
+        "calculen",
+        "calculemos"
+      ]
+    },
+    "mitad": {
+      "animacion": "LSC_mitad",
+      "glosa": "MITAD",
+      "duracion": 1.4,
+      "categoria": "matematicas",
+      "sinonimos": [
+        "medio",
+        "media"
+      ]
+    },
+    "mayor": {
+      "animacion": "LSC_mayor",
+      "glosa": "MAYOR",
+      "duracion": 1.3,
+      "categoria": "matematicas",
+      "sinonimos": [
+        "grande"
+      ]
+    },
+    "menor": {
+      "animacion": "LSC_menor",
+      "glosa": "MENOR",
+      "duracion": 1.3,
+      "categoria": "matematicas",
+      "sinonimos": [
+        "pequeño"
+      ]
+    },
+    "cuánto": {
+      "animacion": "LSC_cuanto",
+      "glosa": "CUÁNTO",
+      "duracion": 1.4,
+      "categoria": "matematicas",
+      "sinonimos": [
+        "cuánta"
+      ]
+    },
+    "cero": {
+      "animacion": "LSC_num_0",
+      "glosa": "CERO",
+      "duracion": 1.0,
+      "categoria": "numeros",
+      "sinonimos": []
+    },
+    "uno": {
+      "animacion": "LSC_num_1",
+      "glosa": "UNO",
+      "duracion": 1.0,
+      "categoria": "numeros",
+      "sinonimos": []
+    },
+    "dos": {
+      "animacion": "LSC_num_2",
+      "glosa": "DOS",
+      "duracion": 1.0,
+      "categoria": "numeros",
+      "sinonimos": []
+    },
+    "tres": {
+      "animacion": "LSC_num_3",
+      "glosa": "TRES",
+      "duracion": 1.0,
+      "categoria": "numeros",
+      "sinonimos": []
+    },
+    "cuatro": {
+      "animacion": "LSC_num_4",
+      "glosa": "CUATRO",
+      "duracion": 1.0,
+      "categoria": "numeros",
+      "sinonimos": []
+    },
+    "cinco": {
+      "animacion": "LSC_num_5",
+      "glosa": "CINCO",
+      "duracion": 1.0,
+      "categoria": "numeros",
+      "sinonimos": []
+    },
+    "seis": {
+      "animacion": "LSC_num_6",
+      "glosa": "SEIS",
+      "duracion": 1.0,
+      "categoria": "numeros",
+      "sinonimos": []
+    },
+    "siete": {
+      "animacion": "LSC_num_7",
+      "glosa": "SIETE",
+      "duracion": 1.0,
+      "categoria": "numeros",
+      "sinonimos": []
+    },
+    "ocho": {
+      "animacion": "LSC_num_8",
+      "glosa": "OCHO",
+      "duracion": 1.0,
+      "categoria": "numeros",
+      "sinonimos": []
+    },
+    "nueve": {
+      "animacion": "LSC_num_9",
+      "glosa": "NUEVE",
+      "duracion": 1.0,
+      "categoria": "numeros",
+      "sinonimos": []
+    },
+    "diez": {
+      "animacion": "LSC_num_10",
+      "glosa": "DIEZ",
+      "duracion": 1.0,
+      "categoria": "numeros",
+      "sinonimos": []
     }
   }
 }

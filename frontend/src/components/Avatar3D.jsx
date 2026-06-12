@@ -23,9 +23,29 @@ const GESTOS = {
   LSC_pregunta: { der: [-2.0, 0.2], izq: [-0.3, -0.1], amplitud: 0.45, velocidad: 8, cabeza: -0.2 },
 };
 
-// Gesto para animaciones que aún no tienen mapeo definido
-const GESTO_GENERICO = { der: [-1.6, 0.3], izq: [-1.6, -0.3], amplitud: 0.3, velocidad: 6, cabeza: 0 };
 const POSE_REPOSO = { der: [0, 0.12], izq: [0, -0.12], amplitud: 0, velocidad: 0, cabeza: 0 };
+
+// Para los IDs sin mapeo manual (números, vocabulario nuevo) se genera un
+// gesto determinista a partir del nombre, así cada seña se ve distinta
+// sin tener que definirla a mano.
+const gestosGenerados = new Map();
+
+function obtenerGesto(animacion) {
+  if (GESTOS[animacion]) return GESTOS[animacion];
+  if (!gestosGenerados.has(animacion)) {
+    let hash = 0;
+    for (const caracter of animacion) hash = (hash * 31 + caracter.charCodeAt(0)) >>> 0;
+    const aleatorio = (desplazamiento) => ((hash >> desplazamiento) % 97) / 97;
+    gestosGenerados.set(animacion, {
+      der: [-0.8 - aleatorio(0) * 1.6, 0.1 + aleatorio(3) * 0.5],
+      izq: [-0.8 - aleatorio(6) * 1.6, -(0.1 + aleatorio(9) * 0.5)],
+      amplitud: 0.15 + aleatorio(12) * 0.3,
+      velocidad: 4 + aleatorio(15) * 6,
+      cabeza: (aleatorio(18) - 0.5) * 0.5,
+    });
+  }
+  return gestosGenerados.get(animacion);
+}
 
 const PIEL = '#e0ac69';
 const CAMISA = '#2563eb';
@@ -53,7 +73,7 @@ export default function Avatar3D({ animacion }) {
 
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
-    const gesto = animacion ? (GESTOS[animacion] ?? GESTO_GENERICO) : POSE_REPOSO;
+    const gesto = animacion ? obtenerGesto(animacion) : POSE_REPOSO;
     const oscilacion = Math.sin(t * gesto.velocidad) * gesto.amplitud;
 
     // Interpolación suave hacia la pose del gesto actual
