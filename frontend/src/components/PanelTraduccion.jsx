@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useGrabadorAudio } from '../hooks/useGrabadorAudio.js';
+import { useReconocimientoVoz } from '../hooks/useReconocimientoVoz.js';
 
 const ETIQUETA_ESTADO = {
   traducida: 'Traducida a seña',
@@ -17,9 +18,31 @@ const FRASES_EJEMPLO = [
 ];
 
 // Panel de entrada (texto escrito o voz) y visualización del resultado.
+// Para la voz usa la Web Speech API del navegador (gratuita); si el navegador
+// no la soporta, recurre a grabar el audio y transcribirlo con Whisper.
 export default function PanelTraduccion({ onTraducir, onTraducirAudio, traduccion, error, cargando }) {
   const [texto, setTexto] = useState('');
-  const { grabando, iniciar, detener, errorMicrofono } = useGrabadorAudio(onTraducirAudio);
+
+  const vozNavegador = useReconocimientoVoz({
+    onTextoParcial: setTexto,
+    onTextoFinal: (textoFinal) => {
+      setTexto(textoFinal);
+      onTraducir(textoFinal);
+    },
+  });
+  const grabadorWhisper = useGrabadorAudio(onTraducirAudio);
+
+  const usaVozNavegador = vozNavegador.disponible;
+  const grabando = usaVozNavegador ? vozNavegador.escuchando : grabadorWhisper.grabando;
+  const errorVoz = usaVozNavegador ? vozNavegador.errorVoz : grabadorWhisper.errorMicrofono;
+
+  function alternarVoz() {
+    if (usaVozNavegador) {
+      grabando ? vozNavegador.detener() : vozNavegador.iniciar();
+    } else {
+      grabando ? grabadorWhisper.detener() : grabadorWhisper.iniciar();
+    }
+  }
 
   function manejarEnvio(evento) {
     evento.preventDefault();
@@ -40,7 +63,11 @@ export default function PanelTraduccion({ onTraducir, onTraducirAudio, traduccio
           rows={3}
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
-          placeholder='Ej.: "El profesor dejó una tarea para los estudiantes"'
+          placeholder={
+            grabando
+              ? 'Escuchando… habla ahora'
+              : 'Ej.: "El profesor dejó una tarea para los estudiantes"'
+          }
         />
         <div className="botones-entrada">
           <button type="submit" disabled={cargando || grabando || !texto.trim()}>
@@ -49,12 +76,17 @@ export default function PanelTraduccion({ onTraducir, onTraducirAudio, traduccio
           <button
             type="button"
             className={grabando ? 'boton-microfono grabando' : 'boton-microfono'}
-            onClick={grabando ? detener : iniciar}
+            onClick={alternarVoz}
             disabled={cargando}
           >
-            {grabando ? '⏹ Detener y traducir' : '🎤 Hablar'}
+            {grabando ? '⏹ Detener' : '🎤 Hablar'}
           </button>
         </div>
+        <p className="nota-voz">
+          {usaVozNavegador
+            ? 'Voz: reconocimiento del navegador (gratuito, sin clave de API)'
+            : 'Voz: Whisper en el servidor (requiere OPENAI_API_KEY)'}
+        </p>
       </form>
 
       <div className="ejemplos">
@@ -74,8 +106,8 @@ export default function PanelTraduccion({ onTraducir, onTraducirAudio, traduccio
         </div>
       </div>
 
-      {(error || errorMicrofono) && (
-        <p className="mensaje-error" role="alert">{error ?? errorMicrofono}</p>
+      {(error || errorVoz) && (
+        <p className="mensaje-error" role="alert">{error ?? errorVoz}</p>
       )}
 
       {traduccion && (
