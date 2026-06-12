@@ -44,6 +44,11 @@ body {
   letter-spacing: -0.02em;
 }
 
+.encabezado .logo {
+  display: inline-block;
+  transform: translateY(2px);
+}
+
 .encabezado p {
   margin: 0.3rem 0 0;
   color: var(--color-texto-suave);
@@ -126,14 +131,77 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.6rem 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  padding: 0.6rem 1rem 0.8rem;
 }
 
 .estado-reproduccion {
   margin: 0;
   color: var(--color-texto-suave);
   font-size: 0.9rem;
+}
+
+.controles-reproduccion {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.selector-velocidad {
+  display: flex;
+  background: #eef2ff;
+  border-radius: 999px;
+  padding: 3px;
+}
+
+.boton-velocidad {
+  min-height: 0;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-texto-suave);
+  font-size: 0.82rem;
+}
+
+.boton-velocidad.activa {
+  background: var(--color-primario);
+  color: white;
+}
+
+/* Línea de tiempo de glosas */
+
+.linea-tiempo {
+  list-style: none;
+  display: flex;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0.7rem 1rem 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.ficha-sena {
+  flex-shrink: 0;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: var(--color-texto-suave);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.ficha-sena.activa {
+  background: var(--color-primario);
+  color: white;
+  transform: scale(1.08);
+}
+
+.ficha-sena.hecha {
+  background: #dbeafe;
+  color: var(--color-primario);
 }
 
 /* ===== Panel de traducción ===== */
@@ -227,6 +295,12 @@ button:disabled {
   background: #e0e7ff;
   color: var(--color-primario);
   white-space: nowrap;
+}
+
+.nota-voz {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--color-texto-suave);
 }
 
 /* ===== Frases de ejemplo ===== */

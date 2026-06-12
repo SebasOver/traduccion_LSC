@@ -124,10 +124,23 @@ el `.env` del backend; sin ella responde 503 con un mensaje explicativo.
 curl -X POST http://localhost:3001/api/traducir/audio -F "audio=@grabacion.webm"
 ```
 
-En el frontend, el botón «🎤 Hablar» graba desde el micrófono con la API
-MediaRecorder del navegador y envía el audio a este endpoint al detener la
-grabación. El navegador pedirá permiso de micrófono (requiere HTTPS o
-localhost).
+## Reconocimiento de voz
+
+El botón «🎤 Hablar» usa dos vías, en este orden:
+
+1. **Web Speech API del navegador (gratuita, por defecto)**: Chrome, Edge y
+   Android la incluyen sin costo ni clave de API (`lang: es-CO`), con
+   transcripción en vivo dentro del cuadro de texto. No funciona en Firefox
+   ni en algunos iOS.
+2. **Whisper en el servidor (respaldo)**: si el navegador no soporta la Web
+   Speech API, se graba el audio con MediaRecorder y se envía a
+   `POST /api/traducir/audio` (requiere `OPENAI_API_KEY`; ~USD 0.006/minuto).
+
+En ambos casos el navegador pide permiso de micrófono (requiere HTTPS o
+localhost). Otras alternativas gratuitas evaluadas: Whisper open-source en el
+propio servidor con `faster-whisper` (gratis pero necesita más RAM/CPU que el
+plan gratuito de Render) y Vosk (ligero y offline, menor calidad); ambas se
+pueden enchufar después detrás del mismo endpoint sin tocar el frontend.
 
 ## Diccionario LSC
 
@@ -175,14 +188,27 @@ Ejemplos reales:
 Para ampliar el vocabulario solo hay que agregar entradas al JSON (y, cuando
 exista el avatar real, exportar el clip de animación con el mismo ID).
 
-## Avatar 3D
+## Avatar 3D y animaciones de las señas
 
-Mientras no exista el modelo definitivo, `Avatar3D.jsx` renderiza un avatar
-placeholder hecho con primitivas que ejecuta un gesto procedural distinto por
-cada ID de animación. Cuando el modelo de MakeHuman/Blender esté listo:
+Las animaciones tienen tres niveles, de menor a mayor fidelidad:
 
-1. Exportarlo con sus clips de animación a `frontend/public/modelos/avatar.glb`
-   (los clips deben llamarse igual que los IDs del diccionario, ej. `LSC_tarea`).
+1. **Poses por keyframes (ya funcionando)**: `frontend/src/data/posesLsc.js`
+   define ~25 señas clave (saludos, sí/no, operaciones, números 0-5,
+   profesor, tarea…) como líneas de tiempo de poses (hombro, codo, muñeca y
+   dedos individuales) que el avatar articulado interpola. Añadir una seña es
+   añadir una entrada de datos, sin Blender.
+2. **Gestos procedurales (automático)**: las señas sin pose definida generan
+   un gesto determinista a partir de su ID, para que toda la secuencia sea
+   visible en la demo.
+3. **Captura de movimiento (la vía definitiva)**: `herramientas/captura-movimiento/`
+   contiene el pipeline video → MediaPipe Holistic → Blender para producir los
+   clips reales a partir de grabaciones de una persona señando, sin animar a
+   mano (ver su README).
+
+Cuando el modelo de MakeHuman/Blender esté listo con sus clips:
+
+1. Exportarlo a `frontend/public/modelos/avatar.glb` (los clips deben llamarse
+   igual que los IDs del diccionario, ej. `LSC_tarea`).
 2. En `EscenaAvatar.jsx`, reemplazar `<Avatar3D />` por `<AvatarGLTF />`
    (componente ya preparado con `useGLTF` + `useAnimations`).
 
@@ -222,5 +248,10 @@ cd ../backend && npm start     # sirve web + API en http://localhost:3001
 - [x] Reconocimiento de voz con Whisper (audio → texto → señas)
 - [x] Diseño responsive (mobile-first) con frases de ejemplo tocables
 - [x] Configuración de despliegue en un solo servicio (`render.yaml`)
+- [x] Voz gratuita con la Web Speech API del navegador (Whisper como respaldo)
+- [x] Avatar articulado con poses por keyframes (~25 señas) y línea de tiempo
+      de glosas con control de velocidad
+- [x] Pipeline de captura de movimiento (video → MediaPipe → Blender)
+- [ ] Grabar/producir los clips reales de las señas con el pipeline
 - [ ] Reemplazar el placeholder por el avatar GLTF de MakeHuman/Blender
 - [ ] Dactilología (deletreo) para palabras fuera del diccionario
