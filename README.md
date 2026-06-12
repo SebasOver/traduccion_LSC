@@ -131,10 +131,26 @@ localhost).
 
 ## Diccionario LSC
 
-`backend/src/data/diccionario_lsc.json` contiene el vocabulario académico de
-ejemplo (10 señas: tarea, examen, profesor, estudiante, universidad, clase,
-estudiar, aprender, libro, pregunta). Cada entrada define la glosa, el ID del
-clip de animación, su duración y sinónimos aceptados.
+`backend/src/data/diccionario_lsc.json` define el vocabulario del prototipo,
+**centrado en una clase de matemáticas básicas** (dominio acotado y fácil de
+demostrar) más vocabulario académico general de aula. 36 señas en 3 categorías:
+
+- `academico_general` (10): tarea, examen, profesor, estudiante, universidad,
+  clase, estudiar, aprender, libro, pregunta.
+- `matematicas` (15): matemáticas, número, sumar, restar, multiplicar, dividir,
+  igual, resultado, problema, ejercicio, calcular, mitad, mayor, menor, cuánto.
+- `numeros` (11): cero a diez.
+
+Cada entrada define la glosa, el ID del clip de animación, su duración en
+segundos, la categoría y los sinónimos/formas verbales que se traducen con la
+misma seña ("parcial" → EXAMEN, "calculen" → CALCULAR). Las cifras escritas
+con dígitos también se traducen: "5" → CINCO, y los números mayores a 10 se
+señan dígito a dígito ("25" → DOS CINCO).
+
+Ejemplo: «¿Cuánto es 2 más 3?» → `CUÁNTO DOS SUMAR TRES`.
+
+Para ampliar el vocabulario solo hay que agregar entradas al JSON (y, cuando
+exista el avatar real, exportar el clip de animación con el mismo ID).
 
 ## Avatar 3D
 
