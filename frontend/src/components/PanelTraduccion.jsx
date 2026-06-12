@@ -7,6 +7,15 @@ const ETIQUETA_ESTADO = {
   desconocida: 'Sin seña en el diccionario',
 };
 
+// Frases típicas del aula para probar con un toque (útil en móvil)
+const FRASES_EJEMPLO = [
+  'Buenos días estudiantes, bienvenidos a la clase de matemáticas',
+  '¿Cuánto es 7 por 8?',
+  'Escriban la tarea en el cuaderno por favor',
+  '¿Entendieron el tema o tienen preguntas?',
+  'Muy bien, terminamos, hasta mañana',
+];
+
 // Panel de entrada (texto escrito o voz) y visualización del resultado.
 export default function PanelTraduccion({ onTraducir, onTraducirAudio, traduccion, error, cargando }) {
   const [texto, setTexto] = useState('');
@@ -17,8 +26,13 @@ export default function PanelTraduccion({ onTraducir, onTraducirAudio, traduccio
     if (texto.trim()) onTraducir(texto.trim());
   }
 
+  function usarEjemplo(frase) {
+    setTexto(frase);
+    onTraducir(frase);
+  }
+
   return (
-    <section className="panel-traduccion">
+    <section className="panel-traduccion tarjeta">
       <form onSubmit={manejarEnvio}>
         <label htmlFor="texto-entrada">Texto en español</label>
         <textarea
@@ -42,6 +56,23 @@ export default function PanelTraduccion({ onTraducir, onTraducirAudio, traduccio
           </button>
         </div>
       </form>
+
+      <div className="ejemplos">
+        <p className="ejemplos-titulo">Prueba con una frase de clase:</p>
+        <div className="ejemplos-lista">
+          {FRASES_EJEMPLO.map((frase) => (
+            <button
+              key={frase}
+              type="button"
+              className="chip-ejemplo"
+              onClick={() => usarEjemplo(frase)}
+              disabled={cargando || grabando}
+            >
+              {frase}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {(error || errorMicrofono) && (
         <p className="mensaje-error" role="alert">{error ?? errorMicrofono}</p>

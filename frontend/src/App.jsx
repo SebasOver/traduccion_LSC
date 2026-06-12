@@ -29,28 +29,30 @@ function App() {
   const manejarAudio = (blob) => ejecutarTraduccion(() => traducirAudio(blob));
 
   return (
-    <main className="aplicacion">
-      <header>
+    <div className="aplicacion">
+      <header className="encabezado">
         <h1>Traductor LSC</h1>
-        <p>Texto y voz a Lengua de Señas Colombiana mediante un avatar 3D</p>
+        <p>Español → Lengua de Señas Colombiana · aula de matemáticas</p>
       </header>
 
-      <div className="contenido">
-        <div className="columna-avatar">
+      <main className="contenido">
+        <section className="columna-avatar tarjeta">
           <EscenaAvatar senaActual={senaActual} />
-          <p className="estado-reproduccion">
-            {reproduciendo
-              ? `Señando ${indice + 1} de ${total}: ${senaActual.glosa}`
-              : total > 0
-                ? 'Reproducción finalizada'
-                : 'Escribe un texto para ver las señas'}
-          </p>
-          {total > 0 && !reproduciendo && traduccion && (
-            <button onClick={() => reproducir(traduccion.secuencia)}>
-              Repetir señas
-            </button>
-          )}
-        </div>
+          <div className="barra-reproduccion">
+            <p className="estado-reproduccion" aria-live="polite">
+              {reproduciendo
+                ? `Señando ${indice + 1} de ${total}: ${senaActual.glosa}`
+                : total > 0
+                  ? 'Reproducción finalizada'
+                  : 'Escribe o di una frase para ver las señas'}
+            </p>
+            {total > 0 && !reproduciendo && traduccion && (
+              <button className="boton-secundario" onClick={() => reproducir(traduccion.secuencia)}>
+                ↻ Repetir
+              </button>
+            )}
+          </div>
+        </section>
 
         <PanelTraduccion
           onTraducir={manejarTraduccion}
@@ -59,8 +61,13 @@ function App() {
           error={error}
           cargando={cargando}
         />
-      </div>
-    </main>
+      </main>
+
+      <footer className="pie">
+        Prototipo de tesis · vocabulario centrado en clases de matemáticas ·
+        avatar provisional mientras se integra el modelo de MakeHuman/Blender
+      </footer>
+    </div>
   );
 }
 
