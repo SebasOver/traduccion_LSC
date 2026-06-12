@@ -8,7 +8,7 @@ import Avatar3D from './Avatar3D.jsx';
 export default function EscenaAvatar({ senaActual }) {
   return (
     <div className="escena-avatar">
-      <Canvas camera={{ position: [0, 0.4, 2.6], fov: 45 }}>
+      <Canvas camera={{ position: [0, 0.4, 2.6], fov: 45 }} dpr={[1, 2]}>
         <ambientLight intensity={0.7} />
         <directionalLight position={[3, 4, 5]} intensity={1.1} />
         <Suspense fallback={null}>
