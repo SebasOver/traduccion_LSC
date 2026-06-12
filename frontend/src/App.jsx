@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import EscenaAvatar from './components/EscenaAvatar.jsx';
 import PanelTraduccion from './components/PanelTraduccion.jsx';
-import { traducirTexto } from './services/api.js';
+import { traducirTexto, traducirAudio } from './services/api.js';
 import { useReproductorSenas } from './hooks/useReproductorSenas.js';
 
 function App() {
@@ -10,11 +10,11 @@ function App() {
   const [cargando, setCargando] = useState(false);
   const { reproducir, senaActual, indice, total, reproduciendo } = useReproductorSenas();
 
-  async function manejarTraduccion(texto) {
+  async function ejecutarTraduccion(peticion) {
     setCargando(true);
     setError(null);
     try {
-      const respuesta = await traducirTexto(texto);
+      const respuesta = await peticion();
       setTraduccion(respuesta);
       reproducir(respuesta.secuencia);
     } catch (e) {
@@ -24,6 +24,9 @@ function App() {
       setCargando(false);
     }
   }
+
+  const manejarTraduccion = (texto) => ejecutarTraduccion(() => traducirTexto(texto));
+  const manejarAudio = (blob) => ejecutarTraduccion(() => traducirAudio(blob));
 
   return (
     <main className="aplicacion">
@@ -51,6 +54,7 @@ function App() {
 
         <PanelTraduccion
           onTraducir={manejarTraduccion}
+          onTraducirAudio={manejarAudio}
           traduccion={traduccion}
           error={error}
           cargando={cargando}
