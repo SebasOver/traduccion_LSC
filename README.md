@@ -212,6 +212,21 @@ Cuando el modelo de MakeHuman/Blender esté listo con sus clips:
 2. En `EscenaAvatar.jsx`, reemplazar `<Avatar3D />` por `<AvatarGLTF />`
    (componente ya preparado con `useGLTF` + `useAnimations`).
 
+### Pose de reposo (`LSC_reposo`)
+
+Sin un clip de reposo, el avatar se muestra en la pose de referencia del
+modelo (T-pose) cuando no hay ninguna seña activa, y la transición hacia la
+primera seña se ve como un manotazo extraño (se mezcla desde la T-pose hacia
+el inicio de la seña). Para evitarlo, exporta un clip adicional llamado
+`LSC_reposo`: una pose corta y neutral con los brazos abajo. `AvatarGLTF.jsx`
+la reproduce en bucle por defecto y hace fundidos hacia/desde ella al
+empezar o terminar cada seña.
+
+En Blender, recuerda que el exportador de glTF solo incluye una acción si
+está "empujada" a un strip de NLA (botón *Push Down* en el Action Editor o
+el editor NLA) — con una sola acción activa sin NLA, las demás no se
+incluyen en el archivo exportado.
+
 ## Despliegue
 
 La forma más sencilla es **un único servicio**: el backend Express sirve la API
