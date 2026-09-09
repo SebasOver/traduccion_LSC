@@ -6,8 +6,13 @@ y crea keyframes de rotación para los huesos de brazos y antebrazos a partir
 de las direcciones hombro→codo y codo→muñeca.
 
 Configuración: ajusta RUTA_JSON, NOMBRE_ARMATURE, NOMBRE_ACCION y el mapa
-HUESOS según tu esqueleto (los nombres del ejemplo son los de Rigify /
-Mixamo; en MakeHuman suelen ser upperarm01.R, lowerarm01.R, etc.).
+HUESOS según tu esqueleto. Los nombres por defecto son los del rig estándar
+Mixamo (con el prefijo "mixamorig:"), que es el que usan tanto los personajes
+de mixamo.com como los avatares exportados de MetaPerson/Avatar SDK (el
+reemplazo de Ready Player Me, cerrado en enero de 2026). Si tu esqueleto
+viene de MakeHuman con rig Rigify/MPFB los nombres suelen ser distintos
+(upper_arm.R, forearm.R, etc.) — revísalos en el Outliner de Blender antes
+de ejecutar el script.
 
 Flujo completo de una seña:
   1. python extraer_keypoints.py videos/hola.mp4 --salida hola.json
@@ -40,12 +45,15 @@ LM = {
     "muneca_izq": 15, "muneca_der": 16,
 }
 
-# hueso de Blender → (landmark origen, landmark destino) cuya dirección lo orienta
+# hueso de Blender → (landmark origen, landmark destino) cuya dirección lo orienta.
+# Nombres del rig estándar Mixamo (MetaPerson/Avatar SDK y mixamo.com lo usan).
+# Para un rig Rigify/MPFB de MakeHuman, usar en su lugar algo como:
+#   "upper_arm.R": (...), "forearm.R": (...), "upper_arm.L": (...), "forearm.L": (...)
 HUESOS = {
-    "upper_arm.R": ("hombro_der", "codo_der"),
-    "forearm.R": ("codo_der", "muneca_der"),
-    "upper_arm.L": ("hombro_izq", "codo_izq"),
-    "forearm.L": ("codo_izq", "muneca_izq"),
+    "mixamorig:RightArm": ("hombro_der", "codo_der"),
+    "mixamorig:RightForeArm": ("codo_der", "muneca_der"),
+    "mixamorig:LeftArm": ("hombro_izq", "codo_izq"),
+    "mixamorig:LeftForeArm": ("codo_izq", "muneca_izq"),
 }
 # ---------------------------------------------------------------------------
 
