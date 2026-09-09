@@ -7,12 +7,13 @@ de las direcciones hombro→codo y codo→muñeca.
 
 Configuración: ajusta RUTA_JSON, NOMBRE_ARMATURE, NOMBRE_ACCION y el mapa
 HUESOS según tu esqueleto. Los nombres por defecto son los del rig estándar
-Mixamo (con el prefijo "mixamorig:"), que es el que usan tanto los personajes
-de mixamo.com como los avatares exportados de MetaPerson/Avatar SDK (el
-reemplazo de Ready Player Me, cerrado en enero de 2026). Si tu esqueleto
-viene de MakeHuman con rig Rigify/MPFB los nombres suelen ser distintos
-(upper_arm.R, forearm.R, etc.) — revísalos en el Outliner de Blender antes
-de ejecutar el script.
+Mixamo SIN el prefijo "mixamorig:" (LeftArm, RightForeArm...), que es como
+exporta sus avatares MetaPerson/Avatar SDK (el reemplazo de Ready Player Me,
+cerrado en enero de 2026) — el objeto Armature en sí queda con el nombre
+"AvatarRoot". mixamo.com sí usa el prefijo "mixamorig:", y un rig Rigify/MPFB
+de MakeHuman usa nombres distintos (upper_arm.R, forearm.R, etc.) —
+revísalos en el Outliner de Blender antes de ejecutar el script si tu fuente
+es otra.
 
 Flujo completo de una seña:
   1. python extraer_keypoints.py videos/hola.mp4 --salida hola.json
@@ -34,7 +35,7 @@ from mathutils import Vector
 
 # ----------------------------- Configuración -------------------------------
 RUTA_JSON = "//hola.json"  # // = relativo al archivo .blend
-NOMBRE_ARMATURE = "Armature"
+NOMBRE_ARMATURE = "AvatarRoot"
 NOMBRE_ACCION = "LSC_hola"
 SALTO_FRAMES = 2  # 1 = todos los fotogramas; 2 = uno de cada dos (curvas más limpias)
 
@@ -46,14 +47,15 @@ LM = {
 }
 
 # hueso de Blender → (landmark origen, landmark destino) cuya dirección lo orienta.
-# Nombres del rig estándar Mixamo (MetaPerson/Avatar SDK y mixamo.com lo usan).
-# Para un rig Rigify/MPFB de MakeHuman, usar en su lugar algo como:
-#   "upper_arm.R": (...), "forearm.R": (...), "upper_arm.L": (...), "forearm.L": (...)
+# Nombres del rig de MetaPerson/Avatar SDK (Mixamo estándar sin el prefijo
+# "mixamorig:"). Si tu avatar viene de mixamo.com directamente, agrégales el
+# prefijo (ej. "mixamorig:RightArm"). Para un rig Rigify/MPFB de MakeHuman,
+# usar en su lugar algo como "upper_arm.R", "forearm.R", etc.
 HUESOS = {
-    "mixamorig:RightArm": ("hombro_der", "codo_der"),
-    "mixamorig:RightForeArm": ("codo_der", "muneca_der"),
-    "mixamorig:LeftArm": ("hombro_izq", "codo_izq"),
-    "mixamorig:LeftForeArm": ("codo_izq", "muneca_izq"),
+    "RightArm": ("hombro_der", "codo_der"),
+    "RightForeArm": ("codo_der", "muneca_der"),
+    "LeftArm": ("hombro_izq", "codo_izq"),
+    "LeftForeArm": ("codo_izq", "muneca_izq"),
 }
 # ---------------------------------------------------------------------------
 
