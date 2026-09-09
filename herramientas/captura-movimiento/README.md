@@ -19,7 +19,11 @@ frontend/public/modelos/avatar.glb con el clip LSC_xxx
 ## Requisitos
 
 - Python 3.9–3.11 (MediaPipe no siempre soporta la última versión)
-- `pip install -r requirements.txt`
+- `pip install -r requirements.txt` — se fija `mediapipe==0.10.9` a propósito:
+  versiones más nuevas (0.10.31+) tienen un bug conocido en Windows donde
+  `mp.solutions` no carga (`AttributeError: module 'mediapipe' has no
+  attribute 'solutions'`). Si ya tenías mediapipe instalado y te aparece ese
+  error, corre `pip uninstall mediapipe -y && pip install mediapipe==0.10.9`.
 - Blender 3.x o 4.x para la importación y la exportación a glTF
 - Un avatar riguado en formato GLB. Ready Player Me cerró el 31 de enero de
   2026 (adquirido por Netflix); la alternativa recomendada es
