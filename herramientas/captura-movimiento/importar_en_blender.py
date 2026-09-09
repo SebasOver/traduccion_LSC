@@ -73,9 +73,18 @@ def main():
     bpy.context.view_layer.objects.active = armature
     bpy.ops.object.mode_set(mode="POSE")
 
+    for nombre_hueso in HUESOS:
+        hueso = armature.pose.bones.get(nombre_hueso)
+        if hueso is not None:
+            hueso.rotation_mode = "QUATERNION"
+
     accion = bpy.data.actions.new(NOMBRE_ACCION)
     armature.animation_data_create()
     armature.animation_data.action = accion
+
+    # Vectores del video expresados en el espacio local del objeto Armature,
+    # por si el avatar quedó rotado o escalado al importarlo
+    matriz_inversa = armature.matrix_world.inverted().to_3x3()
 
     fps_video = datos["fps"]
     fps_escena = bpy.context.scene.render.fps
@@ -86,21 +95,31 @@ def main():
             continue
         fotograma_blender = 1 + int(indice * SALTO_FRAMES * fps_escena / fps_video)
 
+        # Los huesos del brazo van antes que los del antebrazo en HUESOS: al
+        # procesarlos en ese orden, cuando le toca al antebrazo ya se conoce
+        # la posición real de su cabeza (depende de cómo quedó el brazo).
         for nombre_hueso, (origen, destino) in HUESOS.items():
             hueso = armature.pose.bones.get(nombre_hueso)
             if hueso is None:
                 continue
             a = vector_mediapipe(frame["pose"][LM[origen]])
             b = vector_mediapipe(frame["pose"][LM[destino]])
-            direccion = (b - a).normalized()
+            direccion = (matriz_inversa @ (b - a)).normalized()
 
-            # Orienta el eje del hueso (su eje Y local) hacia la dirección
-            # capturada, expresada en el espacio del armature
+            # En vez de calcular la rotación local a mano (fácil de hacer mal:
+            # depende del roll del hueso, de la orientación de su padre, etc.),
+            # se construye directamente la orientación deseada del hueso en el
+            # espacio del armature y se le asigna a pose_bone.matrix — Blender
+            # se encarga de convertirla a la rotación local correcta. Solo se
+            # cambia la rotación: la posición (translation) se conserva tal
+            # como está.
+            matriz_actual = hueso.matrix.copy()
             rotacion = direccion.to_track_quat("Y", "Z")
-            hueso.rotation_mode = "QUATERNION"
-            hueso.rotation_quaternion = (
-                hueso.bone.matrix_local.to_3x3().inverted().to_quaternion() @ rotacion
-            )
+            matriz_deseada = rotacion.to_matrix().to_4x4()
+            matriz_deseada.translation = matriz_actual.translation
+            hueso.matrix = matriz_deseada
+            bpy.context.view_layer.update()
+
             hueso.keyframe_insert("rotation_quaternion", frame=fotograma_blender)
         fotogramas_con_clave += 1
 
