@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, ContactShadows } from '@react-three/drei';
-import Avatar3D from './Avatar3D.jsx';
+import AvatarGLTF from './AvatarGLTF.jsx';
 // Cuando exista el modelo real: import AvatarGLTF from './AvatarGLTF.jsx';
 
 // Escena 3D con el avatar. Recibe la seña actual y muestra su glosa.
@@ -13,7 +13,7 @@ export default function EscenaAvatar({ senaActual }) {
         <directionalLight position={[3, 4, 5]} intensity={1.2} />
         <directionalLight position={[-3, 2, -2]} intensity={0.3} />
         <Suspense fallback={null}>
-          <Avatar3D sena={senaActual} />
+          <AvatarGLTF animacion={senaActual?.animacion ?? null} />
           {/* Con el modelo real: <AvatarGLTF animacion={senaActual?.animacion ?? null} /> */}
           <ContactShadows position={[0, -1, 0]} opacity={0.35} scale={4} blur={2.4} far={1.6} />
         </Suspense>
