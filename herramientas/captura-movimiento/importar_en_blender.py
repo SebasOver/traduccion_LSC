@@ -47,6 +47,13 @@ NOMBRE_ARMATURE = "AvatarRoot"
 NOMBRE_ACCION = "LSC_hola"
 SALTO_FRAMES = 2  # 1 = todos los fotogramas; 2 = uno de cada dos (curvas más limpias)
 
+# Cuánto se suaviza la secuencia de rotaciones de la seña (1.0 = sin
+# suavizar; valores menores mezclan cada fotograma con el suavizado
+# acumulado de los anteriores). Sirve para disimular fotogramas con
+# detección ruidosa — comunes en movimientos rápidos — que se notan como
+# saltos o "parpadeos" que van y vuelven en 2-3 fotogramas.
+SUAVIZADO_ROTACION = 0.5
+
 # Pon TAMBIEN_CREAR_SENA = False cuando RUTA_JSON apunte a un video dedicado
 # solo a la pose de reposo (persona quieta, sin hacer ninguna seña) — así el
 # script no intenta recrear NOMBRE_ACCION a partir de ese video.
@@ -232,25 +239,66 @@ def crear_animacion_sena(armature, datos, matriz_inversa):
     fps_video = datos["fps"]
     fps_escena = bpy.context.scene.render.fps
 
-    fotogramas_con_clave = 0
-    continuidad = {}  # persiste entre fotogramas: evita el salto q / -q
+    # --- Pasada 1: calcular la rotación LOCAL de cada hueso en cada fotograma,
+    # sin insertar keyframes todavía. Se aplica pose_bone.matrix como siempre
+    # (necesario para que el antebrazo vea la posición ya actualizada del
+    # brazo) y se lee de vuelta hueso.rotation_quaternion, que es el valor
+    # local ya resuelto por Blender.
+    continuidad = {}  # evita el salto q / -q entre fotogramas consecutivos
+    fotogramas = []
+    crudas = {nombre: [] for nombre in HUESOS}
     for indice, frame in enumerate(datos["frames"][::SALTO_FRAMES]):
         if frame["pose"] is None:
             continue
         fotograma_blender = 1 + int(indice * SALTO_FRAMES * fps_escena / fps_video)
-
-        # Los huesos del brazo van antes que los del antebrazo en HUESOS: al
-        # procesarlos en ese orden, cuando le toca al antebrazo ya se conoce
-        # la posición real de su cabeza (depende de cómo quedó el brazo).
         orientar_huesos_desde_frame(armature, frame, matriz_inversa, continuidad=continuidad)
+        fotogramas.append(fotograma_blender)
         for nombre_hueso in HUESOS:
             hueso = armature.pose.bones.get(nombre_hueso)
-            if hueso is not None:
-                hueso.keyframe_insert("rotation_quaternion", frame=fotograma_blender)
-        fotogramas_con_clave += 1
+            valor = hueso.rotation_quaternion.copy() if hueso is not None else None
+            crudas[nombre_hueso].append(valor)
 
-    print(f"Acción '{NOMBRE_ACCION}' creada con claves en {fotogramas_con_clave} fotogramas.")
-    duracion = fotogramas_con_clave * SALTO_FRAMES / fps_video
+    # --- Pasada 2: suavizar la secuencia de cada hueso. Un fotograma con
+    # detección ruidosa (común en movimientos rápidos, como el vaivén de un
+    # saludo) puede quedar con una rotación bastante distinta a sus vecinos
+    # aunque el signo del cuaternión esté bien — eso se ve como un salto o
+    # un "parpadeo" que va y vuelve en 2-3 fotogramas. El suavizado
+    # exponencial (slerp encadenado, mismo principio que ya usa
+    # extraer_keypoints.py con las posiciones) evita que un solo fotograma
+    # raro se note tanto.
+    suaves = {}
+    for nombre_hueso, secuencia in crudas.items():
+        resultado = []
+        anterior = None
+        for valor in secuencia:
+            if valor is None:
+                resultado.append(None)
+                continue
+            if anterior is None or SUAVIZADO_ROTACION >= 1.0:
+                suave = valor
+            else:
+                # Reafirma la continuidad de signo también en el valor local,
+                # por si la conversión a espacio local reintrodujo un cambio
+                if valor.dot(anterior) < 0:
+                    valor = -valor
+                suave = anterior.slerp(valor, SUAVIZADO_ROTACION)
+            resultado.append(suave)
+            anterior = suave
+        suaves[nombre_hueso] = resultado
+
+    # --- Pasada 3: aplicar los valores suavizados e insertar los keyframes
+    for i, fotograma_blender in enumerate(fotogramas):
+        for nombre_hueso in HUESOS:
+            hueso = armature.pose.bones.get(nombre_hueso)
+            valor = suaves[nombre_hueso][i]
+            if hueso is None or valor is None:
+                continue
+            hueso.rotation_quaternion = valor
+            hueso.keyframe_insert("rotation_quaternion", frame=fotograma_blender)
+
+    print(f"Acción '{NOMBRE_ACCION}' creada con claves en {len(fotogramas)} fotogramas "
+          f"(suavizado={SUAVIZADO_ROTACION}).")
+    duracion = len(fotogramas) * SALTO_FRAMES / fps_video
     print(f"Duración aproximada: {duracion:.2f} s — recuerda actualizarla en diccionario_lsc.json")
 
 
