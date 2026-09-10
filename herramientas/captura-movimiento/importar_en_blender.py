@@ -71,6 +71,13 @@ LM = {
     "muneca_izq": 15, "muneca_der": 16,
 }
 
+# Índices de landmarks de mano de MediaPipe Hands (21 puntos por mano)
+LM_MANO = {"muneca": 0, "indice_base": 5, "menique_base": 17}
+
+# Antebrazo → clave del diccionario de mano en el JSON, para usar la
+# orientación real de la palma capturada como referencia de giro (roll)
+MANO_PARA_HUESO = {"RightForeArm": "mano_derecha", "LeftForeArm": "mano_izquierda"}
+
 # hueso de Blender → (landmark origen, landmark destino) cuya dirección lo orienta.
 # Nombres del rig de MetaPerson/Avatar SDK (Mixamo estándar sin el prefijo
 # "mixamorig:"). Si tu avatar viene de mixamo.com directamente, agrégales el
@@ -114,7 +121,32 @@ def construir_rotacion(direccion, referencia):
     return Matrix((x_local, y_local, z_local)).transposed().to_quaternion()
 
 
-def orientar_huesos_desde_frame(armature, frame_pose, matriz_inversa, factores=None, continuidad=None):
+def normal_palma(mano, matriz_inversa):
+    """Vector normal a la palma (perpendicular al plano muñeca-índice-meñique),
+    calculado a partir de los landmarks reales de la mano capturados por
+    MediaPipe Hands. Devuelve None si esa mano no se detectó en este
+    fotograma.
+
+    Esto es lo que de verdad soluciona que una seña salga con la palma
+    para el lado equivocado: MediaPipe Pose (hombro-codo-muñeca) solo da
+    POSICIONES de articulación, nunca el giro del brazo sobre su propio
+    eje — eso hay que inferirlo de algo más. Antes se usaba una referencia
+    genérica del cuerpo (hombro-a-hombro), que es una aproximación robusta
+    pero no necesariamente correcta para cada seña. La orientación real de
+    la mano capturada sí lo es, cuando está disponible.
+    """
+    if mano is None:
+        return None
+    muneca = vector_mediapipe(mano[LM_MANO["muneca"]])
+    indice = vector_mediapipe(mano[LM_MANO["indice_base"]])
+    menique = vector_mediapipe(mano[LM_MANO["menique_base"]])
+    normal = (matriz_inversa @ (indice - muneca)).cross(matriz_inversa @ (menique - muneca))
+    if normal.length < 1e-6:
+        return None
+    return normal.normalized()
+
+
+def orientar_huesos_desde_frame(armature, frame, matriz_inversa, factores=None, continuidad=None):
     """Aplica la pose de un fotograma de MediaPipe al pose_bone.matrix de cada
     hueso en HUESOS (sin insertar keyframes). Devuelve True si pudo orientar
     al menos un hueso.
@@ -133,9 +165,10 @@ def orientar_huesos_desde_frame(armature, frame_pose, matriz_inversa, factores=N
     invirtiendo el signo del cuaternión cuando haría que se alejara del
     anterior en vez de acercarse.
     """
+    frame_pose = frame["pose"]
     hombro_izq = vector_mediapipe(frame_pose[LM["hombro_izq"]])
     hombro_der = vector_mediapipe(frame_pose[LM["hombro_der"]])
-    referencia = (matriz_inversa @ (hombro_der - hombro_izq)).normalized()
+    referencia_cuerpo = (matriz_inversa @ (hombro_der - hombro_izq)).normalized()
 
     aplicado = False
     for nombre_hueso, (origen, destino) in HUESOS.items():
@@ -145,6 +178,16 @@ def orientar_huesos_desde_frame(armature, frame_pose, matriz_inversa, factores=N
         a = vector_mediapipe(frame_pose[LM[origen]])
         b = vector_mediapipe(frame_pose[LM[destino]])
         direccion = (matriz_inversa @ (b - a)).normalized()
+
+        # Para el antebrazo, la orientación real de la mano capturada es
+        # mucho más confiable que la referencia genérica del cuerpo — solo
+        # se usa esta última si esa mano no se detectó en este fotograma.
+        referencia = referencia_cuerpo
+        clave_mano = MANO_PARA_HUESO.get(nombre_hueso)
+        if clave_mano is not None:
+            referencia_mano = normal_palma(frame.get(clave_mano), matriz_inversa)
+            if referencia_mano is not None:
+                referencia = referencia_mano
 
         # En vez de calcular la rotación local a mano (fácil de hacer mal:
         # depende del roll del hueso, de la orientación de su padre, etc.),
@@ -199,7 +242,7 @@ def crear_animacion_sena(armature, datos, matriz_inversa):
         # Los huesos del brazo van antes que los del antebrazo en HUESOS: al
         # procesarlos en ese orden, cuando le toca al antebrazo ya se conoce
         # la posición real de su cabeza (depende de cómo quedó el brazo).
-        orientar_huesos_desde_frame(armature, frame["pose"], matriz_inversa, continuidad=continuidad)
+        orientar_huesos_desde_frame(armature, frame, matriz_inversa, continuidad=continuidad)
         for nombre_hueso in HUESOS:
             hueso = armature.pose.bones.get(nombre_hueso)
             if hueso is not None:
@@ -234,7 +277,7 @@ def crear_pose_reposo(armature, datos, matriz_inversa):
         "RightArm": FACTOR_REPOSO_DERECHO, "RightForeArm": FACTOR_REPOSO_DERECHO,
         "LeftArm": FACTOR_REPOSO_IZQUIERDO, "LeftForeArm": FACTOR_REPOSO_IZQUIERDO,
     }
-    orientar_huesos_desde_frame(armature, frames[indice]["pose"], matriz_inversa, factores=factores)
+    orientar_huesos_desde_frame(armature, frames[indice], matriz_inversa, factores=factores)
     # Pose estática: mismo valor en dos fotogramas, para que la acción tenga
     # un rango válido en vez de un solo instante
     for fotograma in (1, 10):
