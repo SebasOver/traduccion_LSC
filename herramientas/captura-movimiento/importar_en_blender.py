@@ -55,6 +55,12 @@ TAMBIEN_CREAR_REPOSO = True
 NOMBRE_REPOSO = "LSC_reposo"
 FRAME_REPOSO = 0  # índice en datos["frames"]; 0 = primer fotograma del video
 
+# Qué tanto se mueve el brazo desde la T-pose hacia la posición capturada
+# (1.0 = 100%, la posición completa; 0.6 = solo 60% del camino). Bajarlo
+# ayuda si el hombro se deforma feo al rotar tanto — prueba distintos
+# valores (0.5, 0.7, 0.85...) hasta que se vea bien en tu modelo.
+FACTOR_REPOSO = 0.7
+
 # Índices de los landmarks de pose de MediaPipe
 LM = {
     "hombro_izq": 11, "hombro_der": 12,
@@ -105,10 +111,15 @@ def construir_rotacion(direccion, referencia):
     return Matrix((x_local, y_local, z_local)).transposed().to_quaternion()
 
 
-def orientar_huesos_desde_frame(armature, frame_pose, matriz_inversa):
+def orientar_huesos_desde_frame(armature, frame_pose, matriz_inversa, factor=1.0):
     """Aplica la pose de un fotograma de MediaPipe al pose_bone.matrix de cada
     hueso en HUESOS (sin insertar keyframes). Devuelve True si pudo orientar
     al menos un hueso.
+
+    'factor' controla qué tanto se mueve el hueso desde su orientación
+    actual (normalmente la T-pose) hacia la orientación capturada: 1.0 es
+    el movimiento completo, valores menores se quedan a medio camino —
+    útil si rotar el hueso del todo deforma mal la malla en esa zona.
     """
     hombro_izq = vector_mediapipe(frame_pose[LM["hombro_izq"]])
     hombro_der = vector_mediapipe(frame_pose[LM["hombro_der"]])
@@ -132,6 +143,9 @@ def orientar_huesos_desde_frame(armature, frame_pose, matriz_inversa):
         # como está.
         matriz_actual = hueso.matrix.copy()
         rotacion = construir_rotacion(direccion, referencia)
+        if factor < 1.0:
+            orientacion_actual = matriz_actual.to_quaternion()
+            rotacion = orientacion_actual.slerp(rotacion, factor)
         matriz_deseada = rotacion.to_matrix().to_4x4()
         matriz_deseada.translation = matriz_actual.translation
         hueso.matrix = matriz_deseada
@@ -193,7 +207,7 @@ def crear_pose_reposo(armature, datos, matriz_inversa):
     armature.animation_data_create()
     armature.animation_data.action = accion
 
-    orientar_huesos_desde_frame(armature, frames[indice]["pose"], matriz_inversa)
+    orientar_huesos_desde_frame(armature, frames[indice]["pose"], matriz_inversa, factor=FACTOR_REPOSO)
     # Pose estática: mismo valor en dos fotogramas, para que la acción tenga
     # un rango válido en vez de un solo instante
     for fotograma in (1, 10):
@@ -202,7 +216,8 @@ def crear_pose_reposo(armature, datos, matriz_inversa):
             if hueso is not None:
                 hueso.keyframe_insert("rotation_quaternion", frame=fotograma)
 
-    print(f"Acción '{NOMBRE_REPOSO}' creada a partir del fotograma {indice} del video (pose estática).")
+    print(f"Acción '{NOMBRE_REPOSO}' creada a partir del fotograma {indice} del video "
+          f"(pose estática, factor={FACTOR_REPOSO}).")
 
 
 def main():
