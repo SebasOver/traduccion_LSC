@@ -48,17 +48,28 @@ frontend/public/modelos/avatar.glb con el clip LSC_xxx
 3. **Importar en Blender**: abrir el .blend del avatar, pestaña *Scripting*,
    abrir `importar_en_blender.py`, ajustar `RUTA_JSON`, `NOMBRE_ACCION`
    (debe ser el ID del diccionario, ej. `LSC_hola`) y el mapa `HUESOS` con los
-   nombres de los huesos de tu esqueleto, y ejecutar.
+   nombres de los huesos de tu esqueleto, y ejecutar. Con `TAMBIEN_CREAR_REPOSO
+   = True` (por defecto), el script también genera una acción `LSC_reposo` a
+   partir de un fotograma temprano del mismo video (normalmente el momento en
+   que la persona está de pie, quieta, antes de iniciar la seña) — evita tener
+   que posar el reposo a mano, lo cual es fácil de hacer mal (torsiones raras
+   en el brazo por rotar sin fijar un eje). Solo hace falta generarla una vez;
+   en señas posteriores puedes poner `TAMBIEN_CREAR_REPOSO = False`.
 
 4. **Retocar**: la detección de brazos es buena; la de dedos es la menos
    fiable. Posar las configuraciones de la mano a mano en 2-3 fotogramas clave
    suele bastar.
 
-5. **Exportar**: File → Export → glTF 2.0 hacia
+5. **Push Down a NLA**: en el Action Editor, con cada acción (`LSC_hola` y
+   `LSC_reposo`) activa, usa *Push Down Action* (está en el menú "Action" de
+   la barra del editor, o en el editor Nonlinear Animation) — el exportador
+   de glTF solo incluye la acción activa a menos que esté en un strip de NLA.
+
+6. **Exportar**: File → Export → glTF 2.0 hacia
    `frontend/public/modelos/avatar.glb`, con la casilla *Animation* activada.
    Verificar que el nombre de la acción coincide con el ID del diccionario.
 
-6. **Actualizar el diccionario**: poner la duración real del clip en
+7. **Actualizar el diccionario**: poner la duración real del clip en
    `backend/src/data/diccionario_lsc.json` y cambiar `<Avatar3D />` por
    `<AvatarGLTF />` en `EscenaAvatar.jsx` (solo la primera vez).
 
