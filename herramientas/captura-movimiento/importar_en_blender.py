@@ -39,7 +39,7 @@ import json
 import math
 
 import bpy
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 # ----------------------------- Configuración -------------------------------
 RUTA_JSON = "//hola.json"  # // = relativo al archivo .blend
@@ -81,11 +81,39 @@ def vector_mediapipe(punto):
     return Vector((punto[0], punto[2], -punto[1]))
 
 
+def construir_rotacion(direccion, referencia):
+    """Rotación que alinea el eje local Y del hueso con 'direccion', usando
+    'referencia' para resolver el giro sobre su propio eje (roll).
+
+    A diferencia de Vector.to_track_quat(), que siempre usa el eje Z del
+    mundo como referencia para el roll, aquí 'referencia' puede ser
+    cualquier vector — importante porque Z del mundo se vuelve una
+    referencia degenerada quando el brazo cuelga casi vertical (como en la
+    pose de reposo): con la dirección casi paralela a la referencia, el
+    giro calculado se vuelve prácticamente aleatorio (por eso salían las
+    palmas y los brazos mirando para atrás). Usar el vector hombro-a-hombro
+    del propio video evita ese problema, porque casi nunca es paralelo a
+    la dirección del brazo, esté arriba o abajo.
+    """
+    y_local = direccion.normalized()
+    ref = referencia.normalized()
+    if abs(y_local.dot(ref)) > 0.98:
+        # Respaldo por si, en algún fotograma raro, sí queda casi paralela
+        ref = Vector((0, 0, 1)) if abs(y_local.z) < 0.9 else Vector((1, 0, 0))
+    x_local = y_local.cross(ref).normalized()
+    z_local = x_local.cross(y_local).normalized()
+    return Matrix((x_local, y_local, z_local)).transposed().to_quaternion()
+
+
 def orientar_huesos_desde_frame(armature, frame_pose, matriz_inversa):
     """Aplica la pose de un fotograma de MediaPipe al pose_bone.matrix de cada
     hueso en HUESOS (sin insertar keyframes). Devuelve True si pudo orientar
     al menos un hueso.
     """
+    hombro_izq = vector_mediapipe(frame_pose[LM["hombro_izq"]])
+    hombro_der = vector_mediapipe(frame_pose[LM["hombro_der"]])
+    referencia = (matriz_inversa @ (hombro_der - hombro_izq)).normalized()
+
     aplicado = False
     for nombre_hueso, (origen, destino) in HUESOS.items():
         hueso = armature.pose.bones.get(nombre_hueso)
@@ -103,7 +131,7 @@ def orientar_huesos_desde_frame(armature, frame_pose, matriz_inversa):
         # cambia la rotación: la posición (translation) se conserva tal
         # como está.
         matriz_actual = hueso.matrix.copy()
-        rotacion = direccion.to_track_quat("Y", "Z")
+        rotacion = construir_rotacion(direccion, referencia)
         matriz_deseada = rotacion.to_matrix().to_4x4()
         matriz_deseada.translation = matriz_actual.translation
         hueso.matrix = matriz_deseada
