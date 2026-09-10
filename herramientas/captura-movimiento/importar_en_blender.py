@@ -47,6 +47,10 @@ NOMBRE_ARMATURE = "AvatarRoot"
 NOMBRE_ACCION = "LSC_hola"
 SALTO_FRAMES = 2  # 1 = todos los fotogramas; 2 = uno de cada dos (curvas más limpias)
 
+# Pon TAMBIEN_CREAR_SENA = False cuando RUTA_JSON apunte a un video dedicado
+# solo a la pose de reposo (persona quieta, sin hacer ninguna seña) — así el
+# script no intenta recrear NOMBRE_ACCION a partir de ese video.
+TAMBIEN_CREAR_SENA = True
 TAMBIEN_CREAR_REPOSO = True
 NOMBRE_REPOSO = "LSC_reposo"
 FRAME_REPOSO = 0  # índice en datos["frames"]; 0 = primer fotograma del video
@@ -185,7 +189,8 @@ def main():
     # por si el avatar quedó rotado o escalado al importarlo
     matriz_inversa = armature.matrix_world.inverted().to_3x3()
 
-    crear_animacion_sena(armature, datos, matriz_inversa)
+    if TAMBIEN_CREAR_SENA:
+        crear_animacion_sena(armature, datos, matriz_inversa)
     if TAMBIEN_CREAR_REPOSO:
         crear_pose_reposo(armature, datos, matriz_inversa)
 
