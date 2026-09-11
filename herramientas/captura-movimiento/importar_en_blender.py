@@ -153,7 +153,7 @@ def normal_palma(mano, matriz_inversa):
     return normal.normalized()
 
 
-def orientar_huesos_desde_frame(armature, frame, matriz_inversa, factores=None, continuidad=None):
+def orientar_huesos_desde_frame(armature, frame, matriz_inversa, factores=None, continuidad=None, usar_mano=True):
     """Aplica la pose de un fotograma de MediaPipe al pose_bone.matrix de cada
     hueso en HUESOS (sin insertar keyframes). Devuelve True si pudo orientar
     al menos un hueso.
@@ -170,7 +170,12 @@ def orientar_huesos_desde_frame(armature, frame, matriz_inversa, factores=None, 
     entre fotogramas consecutivos, Blender interpola por el camino
     equivocado — se ve como si la mano se teletransportara. Se corrige
     invirtiendo el signo del cuaternión cuando haría que se alejara del
-    anterior en vez de acercarse.
+    anterior en vez de acercarse. 'usar_mano' controla si el giro del
+    antebrazo usa la orientación real de la mano capturada (mejor cuando la
+    mano está grande y bien visible, como en una seña con el brazo
+    levantado) o solo la referencia genérica del cuerpo (más confiable
+    cuando la mano está pequeña o parcialmente oculta, como colgando en la
+    pose de reposo, donde la detección de MediaPipe Hands es menos fiable).
     """
     frame_pose = frame["pose"]
     hombro_izq = vector_mediapipe(frame_pose[LM["hombro_izq"]])
@@ -186,12 +191,14 @@ def orientar_huesos_desde_frame(armature, frame, matriz_inversa, factores=None, 
         b = vector_mediapipe(frame_pose[LM[destino]])
         direccion = (matriz_inversa @ (b - a)).normalized()
 
-        # Para el antebrazo, la orientación real de la mano capturada es
-        # mucho más confiable que la referencia genérica del cuerpo — solo
-        # se usa esta última si esa mano no se detectó en este fotograma.
+        # Para el antebrazo, la orientación real de la mano capturada suele
+        # ser más confiable que la referencia genérica del cuerpo — pero
+        # solo cuando la mano se ve bien (usar_mano=True); si no se detectó
+        # esa mano en este fotograma, o si usar_mano=False, se usa la
+        # referencia del cuerpo.
         referencia = referencia_cuerpo
         clave_mano = MANO_PARA_HUESO.get(nombre_hueso)
-        if clave_mano is not None:
+        if usar_mano and clave_mano is not None:
             referencia_mano = normal_palma(frame.get(clave_mano), matriz_inversa)
             if referencia_mano is not None:
                 referencia = referencia_mano
@@ -325,7 +332,11 @@ def crear_pose_reposo(armature, datos, matriz_inversa):
         "RightArm": FACTOR_REPOSO_DERECHO, "RightForeArm": FACTOR_REPOSO_DERECHO,
         "LeftArm": FACTOR_REPOSO_IZQUIERDO, "LeftForeArm": FACTOR_REPOSO_IZQUIERDO,
     }
-    orientar_huesos_desde_frame(armature, frames[indice], matriz_inversa, factores=factores)
+    # usar_mano=False: en reposo la mano cuelga pequeña y parcialmente
+    # oculta, MediaPipe Hands es poco confiable ahí — mejor la referencia
+    # genérica del cuerpo, que es la que ya sabíamos que funcionaba bien
+    # para esta pose.
+    orientar_huesos_desde_frame(armature, frames[indice], matriz_inversa, factores=factores, usar_mano=False)
     # Pose estática: mismo valor en dos fotogramas, para que la acción tenga
     # un rango válido en vez de un solo instante
     for fotograma in (1, 10):
