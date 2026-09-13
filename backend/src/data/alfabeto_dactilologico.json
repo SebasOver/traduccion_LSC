@@ -1,0 +1,33 @@
+{
+  "version": "0.1.0",
+  "descripcion": "Alfabeto dactilológico de la LSC: cada letra del español mapea a la seña de esa letra. Se usa para deletrear palabras que no están en el diccionario principal (nombres propios, palabras técnicas, etc.), en vez de simplemente omitirlas.",
+  "letras": {
+    "a": { "animacion": "LSC_letra_a", "glosa": "A", "duracion": 0.5 },
+    "b": { "animacion": "LSC_letra_b", "glosa": "B", "duracion": 0.5 },
+    "c": { "animacion": "LSC_letra_c", "glosa": "C", "duracion": 0.5 },
+    "d": { "animacion": "LSC_letra_d", "glosa": "D", "duracion": 0.5 },
+    "e": { "animacion": "LSC_letra_e", "glosa": "E", "duracion": 0.5 },
+    "f": { "animacion": "LSC_letra_f", "glosa": "F", "duracion": 0.5 },
+    "g": { "animacion": "LSC_letra_g", "glosa": "G", "duracion": 0.5 },
+    "h": { "animacion": "LSC_letra_h", "glosa": "H", "duracion": 0.5 },
+    "i": { "animacion": "LSC_letra_i", "glosa": "I", "duracion": 0.5 },
+    "j": { "animacion": "LSC_letra_j", "glosa": "J", "duracion": 0.6 },
+    "k": { "animacion": "LSC_letra_k", "glosa": "K", "duracion": 0.5 },
+    "l": { "animacion": "LSC_letra_l", "glosa": "L", "duracion": 0.5 },
+    "m": { "animacion": "LSC_letra_m", "glosa": "M", "duracion": 0.5 },
+    "n": { "animacion": "LSC_letra_n", "glosa": "N", "duracion": 0.5 },
+    "ñ": { "animacion": "LSC_letra_enie", "glosa": "Ñ", "duracion": 0.5 },
+    "o": { "animacion": "LSC_letra_o", "glosa": "O", "duracion": 0.5 },
+    "p": { "animacion": "LSC_letra_p", "glosa": "P", "duracion": 0.5 },
+    "q": { "animacion": "LSC_letra_q", "glosa": "Q", "duracion": 0.5 },
+    "r": { "animacion": "LSC_letra_r", "glosa": "R", "duracion": 0.5 },
+    "s": { "animacion": "LSC_letra_s", "glosa": "S", "duracion": 0.5 },
+    "t": { "animacion": "LSC_letra_t", "glosa": "T", "duracion": 0.5 },
+    "u": { "animacion": "LSC_letra_u", "glosa": "U", "duracion": 0.5 },
+    "v": { "animacion": "LSC_letra_v", "glosa": "V", "duracion": 0.5 },
+    "w": { "animacion": "LSC_letra_w", "glosa": "W", "duracion": 0.6 },
+    "x": { "animacion": "LSC_letra_x", "glosa": "X", "duracion": 0.5 },
+    "y": { "animacion": "LSC_letra_y", "glosa": "Y", "duracion": 0.5 },
+    "z": { "animacion": "LSC_letra_z", "glosa": "Z", "duracion": 0.6 }
+  }
+}

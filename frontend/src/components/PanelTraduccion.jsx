@@ -5,6 +5,7 @@ import { useReconocimientoVoz } from '../hooks/useReconocimientoVoz.js';
 const ETIQUETA_ESTADO = {
   traducida: 'Traducida a seña',
   omitida: 'Omitida (palabra funcional, la LSC no la usa)',
+  deletreada: 'Deletreada con el alfabeto dactilológico (no está en el diccionario)',
   desconocida: 'Sin seña en el diccionario',
 };
 
@@ -134,6 +135,7 @@ export default function PanelTraduccion({ onTraducir, onTraducirAudio, traduccio
           <p className="leyenda">
             <span className="palabra palabra--traducida">traducida</span>
             <span className="palabra palabra--omitida">omitida</span>
+            <span className="palabra palabra--deletreada">deletreada</span>
             <span className="palabra palabra--desconocida">sin seña</span>
           </p>
         </div>
