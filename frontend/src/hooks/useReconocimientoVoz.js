@@ -22,18 +22,24 @@ export function useReconocimientoVoz({ onTextoParcial, onTextoFinal }) {
 
     const reconocedor = new SpeechRecognition();
     reconocedor.lang = 'es-CO';
+    reconocedor.continuous = true;
     reconocedor.interimResults = true;
     reconocedor.maxAlternatives = 1;
 
     let textoFinal = '';
 
     reconocedor.onresult = (evento) => {
+      // evento.results trae TODO el historial de la sesión, no solo lo
+      // nuevo — hay que reconstruir el texto final desde cero cada vez,
+      // no acumularlo con +=, o las frases largas quedan duplicadas.
+      let final = '';
       let parcial = '';
       for (const resultado of evento.results) {
-        if (resultado.isFinal) textoFinal += resultado[0].transcript;
+        if (resultado.isFinal) final += resultado[0].transcript;
         else parcial += resultado[0].transcript;
       }
-      onTextoParcial?.((textoFinal + parcial).trim());
+      textoFinal = final;
+      onTextoParcial?.((final + parcial).trim());
     };
 
     reconocedor.onerror = (evento) => {
@@ -49,7 +55,11 @@ export function useReconocimientoVoz({ onTextoParcial, onTextoFinal }) {
     reconocedor.onend = () => {
       setEscuchando(false);
       const texto = textoFinal.trim();
-      if (texto) onTextoFinal(texto);
+      if (texto) {
+        onTextoFinal(texto);
+      } else {
+        setErrorVoz('No se detectó ninguna frase completa. Intenta hablar un poco más fuerte o más cerca del micrófono.');
+      }
     };
 
     reconocedor.start();
