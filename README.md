@@ -141,7 +141,7 @@ curl -X POST http://localhost:3001/api/traducir/audio -F "audio=@grabacion.webm"
 
 ## Reconocimiento de voz
 
-El botón «🎤 Hablar» usa dos vías, en este orden:
+El botón «Hablar» usa dos vías, en este orden:
 
 1. **Web Speech API del navegador (gratuita, por defecto)**: Chrome, Edge y
    Android la incluyen sin costo ni clave de API (`lang: es-CO`), con

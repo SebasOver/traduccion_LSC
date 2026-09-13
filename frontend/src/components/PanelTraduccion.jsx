@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useGrabadorAudio } from '../hooks/useGrabadorAudio.js';
 import { useReconocimientoVoz } from '../hooks/useReconocimientoVoz.js';
+import { IconoMicrofono, IconoDetener } from './Iconos.jsx';
 
 const ETIQUETA_ESTADO = {
   traducida: 'Traducida a seña',
@@ -80,7 +81,8 @@ export default function PanelTraduccion({ onTraducir, onTraducirAudio, traduccio
             onClick={alternarVoz}
             disabled={cargando}
           >
-            {grabando ? '⏹ Detener' : '🎤 Hablar'}
+            {grabando ? <IconoDetener /> : <IconoMicrofono />}
+            <span>{grabando ? 'Detener' : 'Hablar'}</span>
           </button>
         </div>
         <p className="nota-voz">
