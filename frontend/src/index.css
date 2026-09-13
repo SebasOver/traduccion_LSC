@@ -390,6 +390,11 @@ button:disabled {
   color: #6b7280;
 }
 
+.palabra--deletreada {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
 .palabra--desconocida {
   background: #fee2e2;
   color: #b91c1c;
