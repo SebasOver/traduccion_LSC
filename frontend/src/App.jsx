@@ -2,6 +2,7 @@ import { useState } from 'react';
 import EscenaAvatar from './components/EscenaAvatar.jsx';
 import PanelTraduccion from './components/PanelTraduccion.jsx';
 import LineaTiempoSenas from './components/LineaTiempoSenas.jsx';
+import { IconoRepetir } from './components/Iconos.jsx';
 import { traducirTexto, traducirAudio } from './services/api.js';
 import { useReproductorSenas } from './hooks/useReproductorSenas.js';
 
@@ -35,9 +36,7 @@ function App() {
   return (
     <div className="aplicacion">
       <header className="encabezado">
-        <h1>
-          <span className="logo" aria-hidden="true">🤟</span> Traductor LSC
-        </h1>
+        <h1>Traductor LSC</h1>
         <p>Español → Lengua de Señas Colombiana · aula de matemáticas</p>
       </header>
 
@@ -67,7 +66,7 @@ function App() {
               </div>
               {total > 0 && !reproduciendo && traduccion && (
                 <button className="boton-secundario" onClick={() => reproducir(traduccion.secuencia)}>
-                  ↻ Repetir
+                  <IconoRepetir /> Repetir
                 </button>
               )}
             </div>
@@ -85,7 +84,8 @@ function App() {
 
       <footer className="pie">
         Prototipo de tesis · vocabulario centrado en clases de matemáticas ·
-        avatar provisional mientras se integra el modelo de MakeHuman/Blender
+        la mayoría de las señas todavía usan un gesto provisional mientras se
+        graban las animaciones reales
       </footer>
     </div>
   );
