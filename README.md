@@ -72,6 +72,17 @@ npm run dev            # http://localhost:5173
 El frontend redirige las peticiones que empiezan por `/api` al backend
 (configurado en `vite.config.js`), por lo que ambos deben estar corriendo.
 
+### Pruebas
+
+```bash
+cd backend
+npm test    # Vitest — cubre el motor de traducción (traductor.js)
+```
+
+21 pruebas: búsqueda en el diccionario (sinónimos, plurales, tildes),
+palabras funcionales, frases de varias palabras, cifras, operadores
+contextuales, dactilología y frases completas de ejemplo.
+
 ## API
 
 ### `POST /api/traducir`
@@ -279,4 +290,5 @@ cd ../backend && npm start     # sirve web + API en http://localhost:3001
 - [x] Avatar real (MetaPerson) cargando en el navegador, con la primera seña
       ("hola") y pose de reposo animadas de punta a punta
 - [x] Dactilología (deletreo) para palabras fuera del diccionario
+- [x] Pruebas automatizadas del motor de traducción (21 pruebas con Vitest)
 - [ ] Grabar/producir el resto de los clips reales de las señas
