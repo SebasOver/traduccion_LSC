@@ -1,14 +1,17 @@
 :root {
-  --color-primario: #1d4ed8;
-  --color-primario-suave: #3b82f6;
-  --color-acento: #059669;
-  --color-peligro: #dc2626;
-  --color-texto: #1f2937;
-  --color-texto-suave: #6b7280;
+  --color-primario: #0e7676;
+  --color-primario-suave: #14a3a3;
+  --color-primario-tenue: #e3f2f1;
+  --color-acento: #b5622f;
+  --color-acento-tenue: #f6e8dd;
+  --color-peligro: #c0392b;
+  --color-texto: #262624;
+  --color-texto-suave: #6b6b66;
   --superficie: #ffffff;
+  --linea: #e4e0d8;
   --radio: 16px;
-  --sombra: 0 1px 3px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --sombra: 0 1px 3px rgba(38, 38, 36, 0.08), 0 8px 24px rgba(38, 38, 36, 0.06);
+  font-family: 'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   color: var(--color-texto);
 }
 
@@ -19,7 +22,7 @@
 body {
   margin: 0;
   min-height: 100dvh;
-  background: linear-gradient(180deg, #dbeafe 0%, #eff6ff 35%, #f8fafc 100%);
+  background: linear-gradient(180deg, #eef2ee 0%, #f6f4ef 40%, #faf9f6 100%);
   background-attachment: fixed;
 }
 
@@ -40,13 +43,9 @@ body {
 .encabezado h1 {
   margin: 0;
   font-size: clamp(1.5rem, 5vw, 2.2rem);
+  font-weight: 700;
   color: var(--color-primario);
-  letter-spacing: -0.02em;
-}
-
-.encabezado .logo {
-  display: inline-block;
-  transform: translateY(2px);
+  letter-spacing: -0.01em;
 }
 
 .encabezado p {
@@ -76,6 +75,7 @@ body {
 
 .tarjeta {
   background: var(--superficie);
+  border: 1px solid var(--linea);
   border-radius: var(--radio);
   box-shadow: var(--sombra);
 }
@@ -98,7 +98,7 @@ body {
   position: relative;
   /* En móvil ocupa buena parte de la pantalla sin taparla entera */
   height: clamp(260px, 48dvh, 420px);
-  background: linear-gradient(#bfdbfe, #eff6ff);
+  background: linear-gradient(#dce9e6, #f2f0ea);
   touch-action: pan-y; /* permite seguir haciendo scroll vertical sobre el lienzo */
 }
 
@@ -116,12 +116,12 @@ body {
   max-width: 90%;
   padding: 0.2rem 1rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(6px);
   font-size: clamp(1.1rem, 4.5vw, 1.5rem);
   font-weight: 700;
-  letter-spacing: 0.08em;
-  color: #1e3a8a;
+  letter-spacing: 0.06em;
+  color: var(--color-primario);
   text-align: center;
   pointer-events: none;
   min-height: 1.7rem;
@@ -150,7 +150,7 @@ body {
 
 .selector-velocidad {
   display: flex;
-  background: #eef2ff;
+  background: var(--color-primario-tenue);
   border-radius: 999px;
   padding: 3px;
 }
@@ -185,7 +185,7 @@ body {
   flex-shrink: 0;
   padding: 0.3rem 0.75rem;
   border-radius: 999px;
-  background: #f1f5f9;
+  background: #f1efe9;
   color: var(--color-texto-suave);
   font-size: 0.82rem;
   font-weight: 600;
@@ -200,7 +200,7 @@ body {
 }
 
 .ficha-sena.hecha {
-  background: #dbeafe;
+  background: var(--color-primario-tenue);
   color: var(--color-primario);
 }
 
@@ -231,10 +231,12 @@ body {
   font: inherit;
   font-size: 16px; /* evita el zoom automático de iOS al enfocar */
   padding: 0.7rem;
-  border: 1.5px solid #d1d5db;
+  border: 1.5px solid var(--linea);
   border-radius: 12px;
   resize: vertical;
   min-height: 5.5rem;
+  background: var(--superficie);
+  color: var(--color-texto);
 }
 
 .panel-traduccion textarea:focus {
@@ -251,6 +253,10 @@ body {
 button {
   font: inherit;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
   min-height: 48px; /* área táctil cómoda en móvil */
   padding: 0.55rem 1.1rem;
   border: none;
@@ -262,11 +268,11 @@ button {
 }
 
 button:active {
-  filter: brightness(0.9);
+  filter: brightness(0.92);
 }
 
 button:disabled {
-  background: #93c5fd;
+  background: #b9c4c2;
   cursor: not-allowed;
 }
 
@@ -292,7 +298,7 @@ button:disabled {
 .boton-secundario {
   min-height: 40px;
   padding: 0.35rem 0.9rem;
-  background: #e0e7ff;
+  background: var(--color-primario-tenue);
   color: var(--color-primario);
   white-space: nowrap;
 }
@@ -325,8 +331,8 @@ button:disabled {
   min-height: 0;
   padding: 0.45rem 0.8rem;
   border-radius: 999px;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
+  background: var(--color-primario-tenue);
+  border: 1px solid #c7e0dd;
   color: var(--color-primario);
   font-weight: 500;
   font-size: 0.82rem;
@@ -334,7 +340,7 @@ button:disabled {
 }
 
 .chip-ejemplo:disabled {
-  background: #f1f5f9;
+  background: #f1efe9;
   color: var(--color-texto-suave);
 }
 
@@ -342,7 +348,7 @@ button:disabled {
 
 .mensaje-error {
   color: var(--color-peligro);
-  background: #fef2f2;
+  background: #fbeae7;
   border-radius: 10px;
   padding: 0.6rem 0.8rem;
 }
@@ -355,7 +361,7 @@ button:disabled {
 .texto-transcrito {
   margin: 0;
   font-style: italic;
-  color: #374151;
+  color: var(--color-texto);
 }
 
 .glosas {
@@ -381,18 +387,23 @@ button:disabled {
 }
 
 .palabra--traducida {
-  background: #dcfce7;
-  color: #166534;
+  background: #e1f0e4;
+  color: #2d6a3a;
 }
 
 .palabra--omitida {
-  background: #e5e7eb;
-  color: #6b7280;
+  background: #ece9e2;
+  color: var(--color-texto-suave);
+}
+
+.palabra--deletreada {
+  background: #ece4f2;
+  color: #6d3f8f;
 }
 
 .palabra--desconocida {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: #fbeae7;
+  color: var(--color-peligro);
 }
 
 .palabra-glosa {

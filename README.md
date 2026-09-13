@@ -72,6 +72,17 @@ npm run dev            # http://localhost:5173
 El frontend redirige las peticiones que empiezan por `/api` al backend
 (configurado en `vite.config.js`), por lo que ambos deben estar corriendo.
 
+### Pruebas
+
+```bash
+cd backend
+npm test    # Vitest — cubre el motor de traducción (traductor.js)
+```
+
+21 pruebas: búsqueda en el diccionario (sinónimos, plurales, tildes),
+palabras funcionales, frases de varias palabras, cifras, operadores
+contextuales, dactilología y frases completas de ejemplo.
+
 ## API
 
 ### `POST /api/traducir`
@@ -111,7 +122,11 @@ Estados posibles de cada palabra:
 - `traducida`: existe una seña en el diccionario (búsqueda con normalización de
   tildes, plurales simples y sinónimos).
 - `omitida`: palabra funcional (artículos, preposiciones…) que la LSC no seña.
-- `desconocida`: sin entrada en el diccionario (a futuro: dactilología/deletreo).
+- `deletreada`: la palabra no está en el diccionario, así que se deletrea
+  letra por letra con el alfabeto dactilológico (`backend/src/data/alfabeto_dactilologico.json`) —
+  útil para nombres propios y palabras técnicas.
+- `desconocida`: ni siquiera se pudo deletrear (caso extremo; en la práctica
+  casi todo lo que llega a este punto tiene letras del alfabeto español).
 
 ### `POST /api/traducir/audio`
 
@@ -126,7 +141,7 @@ curl -X POST http://localhost:3001/api/traducir/audio -F "audio=@grabacion.webm"
 
 ## Reconocimiento de voz
 
-El botón «🎤 Hablar» usa dos vías, en este orden:
+El botón «Hablar» usa dos vías, en este orden:
 
 1. **Web Speech API del navegador (gratuita, por defecto)**: Chrome, Edge y
    Android la incluyen sin costo ni clave de API (`lang: es-CO`), con
@@ -175,6 +190,10 @@ Capacidades del traductor:
 - **Operadores contextuales**: "7 por 8" → SIETE MULTIPLICAR OCHO,
   "10 entre 2" → DIEZ DIVIDIR DOS (solo entre números; en "pasen por el
   tablero" el "por" se omite).
+- **Dactilología**: palabras fuera del diccionario (nombres propios, palabras
+  técnicas) se deletrean letra por letra con el alfabeto dactilológico
+  (`backend/src/data/alfabeto_dactilologico.json`, 27 letras del español
+  incluida la ñ), en vez de omitirse — "Andrés" → A N D R E S.
 
 Ejemplos reales:
 
@@ -184,6 +203,7 @@ Ejemplos reales:
 | ¿Entendieron el tema o tienen alguna pregunta? | ENTENDER TEMA TENER PREGUNTA |
 | ¿Cuánto es 7 por 8? | CUÁNTO SIETE MULTIPLICAR OCHO |
 | Muy bien, terminamos, hasta mañana | MUY-BIEN TERMINAR ADIÓS |
+| El niño se llama Andrés | N I Ñ O L L A M A A N D R E S |
 
 Para ampliar el vocabulario solo hay que agregar entradas al JSON (y, cuando
 exista el avatar real, exportar el clip de animación con el mismo ID).
@@ -267,6 +287,8 @@ cd ../backend && npm start     # sirve web + API en http://localhost:3001
 - [x] Avatar articulado con poses por keyframes (~25 señas) y línea de tiempo
       de glosas con control de velocidad
 - [x] Pipeline de captura de movimiento (video → MediaPipe → Blender)
-- [ ] Grabar/producir los clips reales de las señas con el pipeline
-- [ ] Reemplazar el placeholder por el avatar GLTF de MakeHuman/Blender
-- [ ] Dactilología (deletreo) para palabras fuera del diccionario
+- [x] Avatar real (MetaPerson) cargando en el navegador, con la primera seña
+      ("hola") y pose de reposo animadas de punta a punta
+- [x] Dactilología (deletreo) para palabras fuera del diccionario
+- [x] Pruebas automatizadas del motor de traducción (21 pruebas con Vitest)
+- [ ] Grabar/producir el resto de los clips reales de las señas
