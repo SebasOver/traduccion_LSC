@@ -1,16 +1,19 @@
 // Servicio de traducción: convierte texto en español a una secuencia de señas LSC
 // usando el diccionario JSON. Estrategia del prototipo: mapeo palabra→seña con
-// soporte de expresiones de varias palabras ("buenos días" es UNA seña) y
+// soporte de expresiones de varias palabras ("buenos días" es UNA seña),
 // omisión de palabras funcionales (artículos, preposiciones), ya que la
-// gramática de la LSC no las utiliza como el español.
+// gramática de la LSC no las utiliza como el español, y deletreo con el
+// alfabeto dactilológico para palabras fuera del diccionario.
 import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const RUTA_DICCIONARIO = path.join(__dirname, '..', 'data', 'diccionario_lsc.json');
+const RUTA_ALFABETO = path.join(__dirname, '..', 'data', 'alfabeto_dactilologico.json');
 
 const diccionario = JSON.parse(readFileSync(RUTA_DICCIONARIO, 'utf8'));
+const alfabeto = JSON.parse(readFileSync(RUTA_ALFABETO, 'utf8'));
 
 // Palabras funcionales que se omiten en la traducción (la LSC no las seña).
 // Se comparan en minúsculas pero CONSERVANDO tildes, para distinguir "que"
@@ -61,6 +64,12 @@ for (const [palabra, entrada] of Object.entries(diccionario.senas)) {
 // Las frases más largas primero, para que "hasta mañana" gane sobre "mañana"
 frases.sort((a, b) => b.tokens.length - a.tokens.length);
 
+// Índice del alfabeto dactilológico: letra normalizada → entrada
+const indiceLetras = new Map();
+for (const [letra, entrada] of Object.entries(alfabeto.letras)) {
+  indiceLetras.set(normalizar(letra), entrada);
+}
+
 // Busca una palabra probando también singulares simples ("tareas" → "tarea")
 function buscarSena(palabraNormalizada) {
   const candidatas = [palabraNormalizada];
@@ -106,6 +115,27 @@ function traducirNumero(token, resultado) {
     const sena = buscarSena(PALABRA_DIGITO[digito]);
     resultado.push(aSena(digitos.length === 1 ? token : String(digito), sena));
   }
+}
+
+// Palabras fuera del diccionario (nombres propios, palabras técnicas...) se
+// deletrean letra por letra con el alfabeto dactilológico, en vez de
+// omitirse. Devuelve un arreglo de entradas de resultado, una por letra
+// (vacío si la palabra no tiene ninguna letra deletreable).
+function deletrear(palabra) {
+  const normalizada = normalizar(palabra);
+  const letras = [];
+  for (const caracter of normalizada) {
+    const entrada = indiceLetras.get(caracter);
+    if (!entrada) continue;
+    letras.push({
+      palabra: caracter.toUpperCase(),
+      estado: 'deletreada',
+      glosa: entrada.glosa,
+      animacion: entrada.animacion,
+      duracion: entrada.duracion,
+    });
+  }
+  return letras;
 }
 
 // Operadores que en lenguaje de aula se dicen con preposiciones:
@@ -166,14 +196,19 @@ export function traducir(texto) {
     if (sena) {
       resultado.push(aSena(token, sena));
     } else {
-      // Palabra fuera del diccionario: en el futuro se puede deletrear (dactilología)
-      resultado.push({ palabra: token, estado: 'desconocida' });
+      // Palabra fuera del diccionario: se deletrea letra por letra
+      const letras = deletrear(token);
+      if (letras.length > 0) {
+        resultado.push(...letras);
+      } else {
+        resultado.push({ palabra: token, estado: 'desconocida' });
+      }
     }
     i += 1;
   }
 
   const secuencia = resultado
-    .filter((item) => item.estado === 'traducida')
+    .filter((item) => item.estado === 'traducida' || item.estado === 'deletreada')
     .map(({ glosa, animacion, duracion }) => ({ glosa, animacion, duracion }));
 
   return {
