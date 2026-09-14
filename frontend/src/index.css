@@ -10,7 +10,7 @@
   --superficie: #ffffff;
   --linea: #e4e0d8;
   --radio: 16px;
-  --sombra: 0 1px 3px rgba(38, 38, 36, 0.08), 0 8px 24px rgba(38, 38, 36, 0.06);
+  --sombra: 0 1px 2px rgba(38, 38, 36, 0.06);
   font-family: 'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   color: var(--color-texto);
 }
@@ -22,7 +22,11 @@
 body {
   margin: 0;
   min-height: 100dvh;
-  background: linear-gradient(180deg, #eef2ee 0%, #f6f4ef 40%, #faf9f6 100%);
+  background-color: #f6f4ef;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(14, 118, 118, 0.09) 1px, transparent 0),
+    linear-gradient(180deg, #eef2ee 0%, #f6f4ef 40%, #faf9f6 100%);
+  background-size: 22px 22px, 100% 100%;
   background-attachment: fixed;
 }
 
@@ -90,6 +94,14 @@ body {
   border: 1px solid var(--linea);
   border-radius: var(--radio);
   box-shadow: var(--sombra);
+}
+
+.columna-avatar.tarjeta {
+  border-top: 3px solid var(--color-primario);
+}
+
+.panel-traduccion.tarjeta {
+  border-top: 3px solid var(--color-acento);
 }
 
 .pie {
@@ -366,8 +378,12 @@ button:disabled {
 }
 
 .resultado h2 {
-  font-size: 0.95rem;
-  margin: 1.1rem 0 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-texto-suave);
+  margin: 1.2rem 0 0.4rem;
 }
 
 .texto-transcrito {
