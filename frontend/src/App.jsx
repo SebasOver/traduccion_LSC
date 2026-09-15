@@ -36,8 +36,10 @@ function App() {
   return (
     <div className="aplicacion">
       <header className="encabezado">
-        <p className="eyebrow">Prototipo de tesis · LSC</p>
-        <h1>Traductor LSC</h1>
+        <p className="eyebrow">Prototipo de tesis</p>
+        <h1>
+          Traductor <span className="marca-acento">LSC</span>
+        </h1>
         <p className="subtitulo-app">Español → Lengua de Señas Colombiana, aula de matemáticas</p>
       </header>
 
