@@ -10,6 +10,7 @@
   --superficie: #ffffff;
   --linea: #e4e0d8;
   --radio: 16px;
+  --radio-control: 12px;
   --sombra: 0 1px 2px rgba(38, 38, 36, 0.06);
   font-family: 'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   color: var(--color-texto);
@@ -62,6 +63,11 @@ body {
   font-style: italic;
   color: var(--color-primario);
   letter-spacing: -0.02em;
+}
+
+.marca-acento {
+  font-style: normal;
+  color: var(--color-acento);
 }
 
 .subtitulo-app {
@@ -256,7 +262,7 @@ body {
   font-size: 16px; /* evita el zoom automático de iOS al enfocar */
   padding: 0.7rem;
   border: 1.5px solid var(--linea);
-  border-radius: 12px;
+  border-radius: var(--radio-control);
   resize: vertical;
   min-height: 5.5rem;
   background: var(--superficie);
@@ -284,15 +290,20 @@ button {
   min-height: 48px; /* área táctil cómoda en móvil */
   padding: 0.55rem 1.1rem;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radio-control);
   background: var(--color-primario);
   color: white;
   cursor: pointer;
-  transition: filter 0.15s ease;
+  transition: filter 0.15s ease, transform 0.1s ease;
 }
 
-button:active {
+button:not(:disabled):hover {
+  filter: brightness(1.05);
+}
+
+button:not(:disabled):active {
   filter: brightness(0.92);
+  transform: scale(0.98);
 }
 
 button:disabled {
@@ -354,13 +365,18 @@ button:disabled {
 .chip-ejemplo {
   min-height: 0;
   padding: 0.5rem 0.85rem;
-  border-radius: 10px;
+  border-radius: var(--radio-control);
   background: var(--color-primario-tenue);
   border: 1px solid #c7e0dd;
   color: var(--color-primario);
   font-weight: 500;
   font-size: 0.82rem;
   text-align: left;
+  transition: border-color 0.15s ease, transform 0.1s ease;
+}
+
+.chip-ejemplo:not(:disabled):hover {
+  border-color: var(--color-primario-suave);
 }
 
 .chip-ejemplo:disabled {
@@ -373,8 +389,14 @@ button:disabled {
 .mensaje-error {
   color: var(--color-peligro);
   background: #fbeae7;
-  border-radius: 10px;
+  border-radius: var(--radio-control);
   padding: 0.6rem 0.8rem;
+}
+
+.resultado {
+  margin-top: 1.25rem;
+  padding-top: 1.1rem;
+  border-top: 1px dashed var(--linea);
 }
 
 .resultado h2 {
@@ -384,6 +406,10 @@ button:disabled {
   text-transform: uppercase;
   color: var(--color-texto-suave);
   margin: 1.2rem 0 0.4rem;
+}
+
+.resultado h2:first-child {
+  margin-top: 0;
 }
 
 .texto-transcrito {
@@ -462,4 +488,15 @@ button:focus-visible,
   text-align: center;
   color: var(--color-texto-suave);
   font-size: 0.9rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
