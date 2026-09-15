@@ -80,6 +80,7 @@ export default function PanelTraduccion({ onTraducir, onTraducirAudio, traduccio
             className={grabando ? 'boton-microfono grabando' : 'boton-microfono'}
             onClick={alternarVoz}
             disabled={cargando}
+            aria-pressed={grabando}
           >
             {grabando ? <IconoDetener /> : <IconoMicrofono />}
             <span>{grabando ? 'Detener' : 'Hablar'}</span>
@@ -128,7 +129,12 @@ export default function PanelTraduccion({ onTraducir, onTraducirAudio, traduccio
           <h2>Análisis palabra por palabra</h2>
           <ul className="lista-palabras">
             {traduccion.resultado.map((item, i) => (
-              <li key={i} className={`palabra palabra--${item.estado}`} title={ETIQUETA_ESTADO[item.estado]}>
+              <li
+                key={i}
+                className={`palabra palabra--${item.estado}`}
+                title={ETIQUETA_ESTADO[item.estado]}
+                aria-label={`${item.palabra}: ${ETIQUETA_ESTADO[item.estado]}`}
+              >
                 {item.palabra}
                 {item.glosa && <span className="palabra-glosa"> → {item.glosa}</span>}
               </li>
