@@ -2,11 +2,11 @@
   --color-primario: #0e7676;
   --color-primario-suave: #14a3a3;
   --color-primario-tenue: #e3f2f1;
-  --color-acento: #b5622f;
+  --color-acento: #a5592b;
   --color-acento-tenue: #f6e8dd;
   --color-peligro: #c0392b;
   --color-texto: #262624;
-  --color-texto-suave: #6b6b66;
+  --color-texto-suave: #61615d;
   --superficie: #ffffff;
   --linea: #e4e0d8;
   --radio: 16px;
@@ -443,4 +443,23 @@ button:disabled {
   flex-wrap: wrap;
   gap: 0.4rem;
   margin-top: 0.6rem;
+}
+
+/* ===== Accesibilidad: foco de teclado y estados de error ===== */
+
+button:focus-visible,
+.chip-ejemplo:focus-visible {
+  outline: 3px solid var(--color-primario-suave);
+  outline-offset: 2px;
+}
+
+.avatar-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--color-texto-suave);
+  font-size: 0.9rem;
 }

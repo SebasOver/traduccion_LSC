@@ -51,13 +51,16 @@ function App() {
                 ? `Señando ${indice + 1} de ${total}`
                 : total > 0
                   ? 'Reproducción finalizada'
-                  : 'Escribe o di una frase para ver las señas'}
+                  : traduccion
+                    ? 'Esta frase no tiene ninguna seña para mostrar'
+                    : 'Escribe o di una frase para ver las señas'}
             </p>
             <div className="controles-reproduccion">
               <div className="selector-velocidad" role="group" aria-label="Velocidad de las señas">
                 {VELOCIDADES.map((v) => (
                   <button
                     key={v}
+                    aria-pressed={v === velocidad}
                     className={v === velocidad ? 'boton-velocidad activa' : 'boton-velocidad'}
                     onClick={() => setVelocidad(v)}
                   >
