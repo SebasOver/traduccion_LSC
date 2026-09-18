@@ -36,8 +36,10 @@ function App() {
   return (
     <div className="aplicacion">
       <header className="encabezado">
-        <p className="eyebrow">Prototipo de tesis · LSC</p>
-        <h1>Traductor LSC</h1>
+        <p className="eyebrow">Prototipo de tesis</p>
+        <h1>
+          Traductor <span className="marca-acento">LSC</span>
+        </h1>
         <p className="subtitulo-app">Español → Lengua de Señas Colombiana, aula de matemáticas</p>
       </header>
 
@@ -51,13 +53,16 @@ function App() {
                 ? `Señando ${indice + 1} de ${total}`
                 : total > 0
                   ? 'Reproducción finalizada'
-                  : 'Escribe o di una frase para ver las señas'}
+                  : traduccion
+                    ? 'Esta frase no tiene ninguna seña para mostrar'
+                    : 'Escribe o di una frase para ver las señas'}
             </p>
             <div className="controles-reproduccion">
               <div className="selector-velocidad" role="group" aria-label="Velocidad de las señas">
                 {VELOCIDADES.map((v) => (
                   <button
                     key={v}
+                    aria-pressed={v === velocidad}
                     className={v === velocidad ? 'boton-velocidad activa' : 'boton-velocidad'}
                     onClick={() => setVelocidad(v)}
                   >
