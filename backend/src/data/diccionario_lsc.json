@@ -283,77 +283,88 @@
       "glosa": "CERO",
       "duracion": 1.0,
       "categoria": "numeros",
-      "sinonimos": []
+      "sinonimos": [],
+      "enfoqueManos": true
     },
     "uno": {
       "animacion": "LSC_num_1",
       "glosa": "UNO",
       "duracion": 1.0,
       "categoria": "numeros",
-      "sinonimos": []
+      "sinonimos": [],
+      "enfoqueManos": true
     },
     "dos": {
       "animacion": "LSC_num_2",
       "glosa": "DOS",
       "duracion": 1.0,
       "categoria": "numeros",
-      "sinonimos": []
+      "sinonimos": [],
+      "enfoqueManos": true
     },
     "tres": {
       "animacion": "LSC_num_3",
       "glosa": "TRES",
       "duracion": 1.0,
       "categoria": "numeros",
-      "sinonimos": []
+      "sinonimos": [],
+      "enfoqueManos": true
     },
     "cuatro": {
       "animacion": "LSC_num_4",
       "glosa": "CUATRO",
       "duracion": 1.0,
       "categoria": "numeros",
-      "sinonimos": []
+      "sinonimos": [],
+      "enfoqueManos": true
     },
     "cinco": {
       "animacion": "LSC_num_5",
       "glosa": "CINCO",
       "duracion": 1.0,
       "categoria": "numeros",
-      "sinonimos": []
+      "sinonimos": [],
+      "enfoqueManos": true
     },
     "seis": {
       "animacion": "LSC_num_6",
       "glosa": "SEIS",
       "duracion": 1.0,
       "categoria": "numeros",
-      "sinonimos": []
+      "sinonimos": [],
+      "enfoqueManos": true
     },
     "siete": {
       "animacion": "LSC_num_7",
       "glosa": "SIETE",
       "duracion": 1.0,
       "categoria": "numeros",
-      "sinonimos": []
+      "sinonimos": [],
+      "enfoqueManos": true
     },
     "ocho": {
       "animacion": "LSC_num_8",
       "glosa": "OCHO",
       "duracion": 1.0,
       "categoria": "numeros",
-      "sinonimos": []
+      "sinonimos": [],
+      "enfoqueManos": true
     },
     "nueve": {
       "animacion": "LSC_num_9",
       "glosa": "NUEVE",
       "duracion": 1.0,
       "categoria": "numeros",
-      "sinonimos": []
+      "sinonimos": [],
+      "enfoqueManos": true
     },
     "diez": {
       "animacion": "LSC_num_10",
       "glosa": "DIEZ",
       "duracion": 1.0,
       "categoria": "numeros",
-      "sinonimos": []
+      "sinonimos": [],
+      "enfoqueManos": true
     },
     "hola": {
       "animacion": "LSC_hola",

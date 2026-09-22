@@ -115,6 +115,25 @@ describe('dactilología (deletreo)', () => {
     const r = traducir('hola Andrés');
     expect(r.secuencia.map((s) => s.glosa)).toEqual(['HOLA', 'A', 'N', 'D', 'R', 'E', 'S']);
   });
+
+  it('marca las letras deletreadas con enfoqueManos, para que el avatar acerque la cámara', () => {
+    const r = traducir('Andrés');
+    expect(r.secuencia.every((s) => s.enfoqueManos === true)).toBe(true);
+  });
+});
+
+describe('enfoqueManos (señas que se hacen solo con los dedos)', () => {
+  it('marca los números con enfoqueManos', () => {
+    const r = traducir('7');
+    expect(r.secuencia).toEqual([
+      { glosa: 'SIETE', animacion: 'LSC_num_7', duracion: 1.0, enfoqueManos: true },
+    ]);
+  });
+
+  it('no marca una seña de cuerpo completo con enfoqueManos', () => {
+    const r = traducir('profesor');
+    expect(r.secuencia[0].enfoqueManos).toBeUndefined();
+  });
 });
 
 describe('frases completas', () => {

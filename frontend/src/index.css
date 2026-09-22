@@ -138,6 +138,32 @@ body {
   }
 }
 
+.controles-zoom {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  z-index: 1;
+}
+
+.boton-zoom {
+  min-height: 34px;
+  width: 34px;
+  padding: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(4px);
+  color: var(--color-primario);
+  box-shadow: var(--sombra);
+}
+
+.boton-zoom:not(:disabled):hover {
+  filter: none;
+  background: var(--superficie);
+}
+
 .subtitulo-glosa {
   position: absolute;
   bottom: 0.75rem;

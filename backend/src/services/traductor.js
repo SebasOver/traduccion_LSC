@@ -94,13 +94,18 @@ function coincideFrase(tokensNormalizados, posicion) {
 }
 
 function aSena(palabra, sena) {
-  return {
+  const item = {
     palabra,
     estado: 'traducida',
     glosa: sena.glosa,
     animacion: sena.animacion,
     duracion: sena.duracion,
   };
+  // Señas que se hacen solo con los dedos (los números, por ejemplo): el
+  // avatar necesita acercar la cámara para que el movimiento se aprecie,
+  // porque a distancia de cuerpo completo es casi imperceptible.
+  if (sena.enfoqueManos) item.enfoqueManos = true;
+  return item;
 }
 
 // Cifras escritas con dígitos: "5" se traduce como la seña de "cinco";
@@ -133,6 +138,7 @@ function deletrear(palabra) {
       glosa: entrada.glosa,
       animacion: entrada.animacion,
       duracion: entrada.duracion,
+      enfoqueManos: true,
     });
   }
   return letras;
@@ -209,7 +215,9 @@ export function traducir(texto) {
 
   const secuencia = resultado
     .filter((item) => item.estado === 'traducida' || item.estado === 'deletreada')
-    .map(({ glosa, animacion, duracion }) => ({ glosa, animacion, duracion }));
+    .map(({ glosa, animacion, duracion, enfoqueManos }) =>
+      enfoqueManos ? { glosa, animacion, duracion, enfoqueManos } : { glosa, animacion, duracion },
+    );
 
   return {
     textoOriginal: texto,
