@@ -15,7 +15,7 @@ const CAMARA_DEFECTO = { posicion: [0, 0.4, 2.6], objetivo: [0, 0.2, 0] };
 // de reposo — hay que revisarlos con las animaciones reales de los números
 // ya puestas, porque una seña con la mano al frente del pecho no queda
 // exactamente donde queda la mano colgando en reposo.
-const CAMARA_MANOS = { posicion: [0.1, 0.55, 1.15], objetivo: [0.1, 0.5, 0] };
+const CAMARA_MANOS = { posicion: [0, 0.55, 1.15], objetivo: [0, 0.5, 0] };
 
 // Escena 3D con el avatar. Recibe la seña actual y muestra su glosa.
 // El lienzo 3D queda oculto para lectores de pantalla porque es puramente
@@ -72,14 +72,11 @@ export default function EscenaAvatar({ senaActual }) {
               <AvatarGLTF animacion={senaActual?.animacion ?? null} />
               <ContactShadows position={[0, -1, 0]} opacity={0.35} scale={4} blur={2.4} far={1.6} />
             </Suspense>
-            {/* dollySpeed más bajo: en la rueda del mouse el zoom por defecto es muy brusco */}
-            <CameraControls
-              ref={controlesRef}
-              minDistance={0.7}
-              maxDistance={5}
-              dollySpeed={0.5}
-              truckSpeed={0}
-            />
+            {/* dollySpeed más bajo: en la rueda del mouse el zoom por defecto es muy brusco.
+                El usuario puede rotar, mover (truck) y hacer zoom libremente para ver el
+                avatar como quiera; minDistance evita un acercamiento tan extremo que la
+                imagen se vea rota. */}
+            <CameraControls ref={controlesRef} minDistance={0.9} maxDistance={5} dollySpeed={0.5} />
           </Canvas>
         </div>
       </LimiteErroresAvatar>
