@@ -22,7 +22,7 @@ const CAMARA_MANOS = { posicion: [0, 0.55, 1.15], objetivo: [0, 0.5, 0] };
 // visual — la glosa de al lado (aria-live) ya comunica lo mismo en texto.
 // Los controles de zoom sí son reales controles y quedan fuera de ese
 // bloque oculto.
-export default function EscenaAvatar({ senaActual }) {
+export default function EscenaAvatar({ senaActual, bucle = false }) {
   const controlesRef = useRef(null);
   const encuadrePrevioRef = useRef(null);
 
@@ -69,7 +69,7 @@ export default function EscenaAvatar({ senaActual }) {
             <directionalLight position={[3, 4, 5]} intensity={1.2} />
             <directionalLight position={[-3, 2, -2]} intensity={0.3} />
             <Suspense fallback={null}>
-              <AvatarGLTF animacion={senaActual?.animacion ?? null} />
+              <AvatarGLTF animacion={senaActual?.animacion ?? null} bucle={bucle} />
               <ContactShadows position={[0, -1, 0]} opacity={0.35} scale={4} blur={2.4} far={1.6} />
             </Suspense>
             {/* dollySpeed más bajo: en la rueda del mouse el zoom por defecto es muy brusco.

@@ -16,7 +16,7 @@ import * as THREE from 'three';
 // se teletransportara metida en el torso.
 const CLIP_REPOSO = 'LSC_reposo';
 
-export default function AvatarGLTF({ animacion, url = '/modelos/avatar.glb' }) {
+export default function AvatarGLTF({ animacion, url = '/modelos/avatar.glb', bucle = false }) {
   const grupo = useRef();
   const { scene, animations } = useGLTF(url);
   const { actions } = useAnimations(animations, grupo);
@@ -41,8 +41,13 @@ export default function AvatarGLTF({ animacion, url = '/modelos/avatar.glb' }) {
 
     const anterior = accionActivaRef.current;
     if (anterior && anterior !== accion) anterior.stop();
-    accion.reset().setLoop(THREE.LoopOnce, 1);
-    accion.clampWhenFinished = true;
+    if (bucle) {
+      accion.reset().setLoop(THREE.LoopRepeat, Infinity);
+      accion.clampWhenFinished = false;
+    } else {
+      accion.reset().setLoop(THREE.LoopOnce, 1);
+      accion.clampWhenFinished = true;
+    }
     accion.play();
     accionActivaRef.current = accion;
 
@@ -54,7 +59,7 @@ export default function AvatarGLTF({ animacion, url = '/modelos/avatar.glb' }) {
         accionActivaRef.current = reposo;
       }
     };
-  }, [animacion, actions, url]);
+  }, [animacion, actions, url, bucle]);
 
   return <primitive ref={grupo} object={scene} position={[0, -1, 0]} />;
 }

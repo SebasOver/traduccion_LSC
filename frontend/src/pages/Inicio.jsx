@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom';
 import EscenaAvatar from '../components/EscenaAvatar.jsx';
 
+// Saludo real (captura de movimiento, no una pose inventada) para recibir
+// a quien entra a la página, en vez de la pose de reposo neutral.
+const SALUDO = { animacion: 'LSC_hola', glosa: 'HOLA' };
+
 const PASOS = [
   {
     numero: '01',
@@ -36,8 +40,12 @@ export default function Inicio() {
             Comenzar a traducir →
           </Link>
         </div>
-        <div className="hero-avatar tarjeta columna-avatar">
-          <EscenaAvatar senaActual={null} />
+        <div className="hero-avatar-envoltura">
+          <div className="hero-avatar tarjeta columna-avatar">
+            <EscenaAvatar senaActual={SALUDO} bucle />
+          </div>
+          <p className="burbuja burbuja-1">La inclusión también se traduce en señas.</p>
+          <p className="burbuja burbuja-2">Más que una app, un puente de comunicación.</p>
         </div>
       </section>
 
