@@ -1,18 +1,20 @@
 :root {
-  --color-primario: #0e7676;
-  --color-primario-suave: #14a3a3;
-  --color-primario-tenue: #e3f2f1;
-  --color-acento: #a5592b;
-  --color-acento-tenue: #f6e8dd;
+  --color-primario: #5b3a8e;
+  --color-primario-suave: #7c57b8;
+  --color-primario-tenue: #ece5f5;
+  --color-acento: #8f5f16;
+  --color-acento-tenue: #f3e8d4;
   --color-peligro: #c0392b;
-  --color-texto: #262624;
-  --color-texto-suave: #61615d;
+  --color-texto: #272432;
+  --color-texto-suave: #6b6474;
   --superficie: #ffffff;
-  --linea: #e4e0d8;
+  --linea: #e3dde8;
   --radio: 16px;
   --radio-control: 12px;
-  --sombra: 0 1px 2px rgba(38, 38, 36, 0.06);
-  font-family: 'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --sombra: 0 1px 2px rgba(39, 36, 50, 0.07);
+  --fuente-display: 'Bricolage Grotesque', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --fuente-cuerpo: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--fuente-cuerpo);
   color: var(--color-texto);
 }
 
@@ -20,13 +22,17 @@
   box-sizing: border-box;
 }
 
+h1, h2, h3 {
+  font-family: var(--fuente-display);
+}
+
 body {
   margin: 0;
   min-height: 100dvh;
-  background-color: #f6f4ef;
+  background-color: #f7f5f8;
   background-image:
-    radial-gradient(circle at 1px 1px, rgba(14, 118, 118, 0.09) 1px, transparent 0),
-    linear-gradient(180deg, #eef2ee 0%, #f6f4ef 40%, #faf9f6 100%);
+    radial-gradient(circle at 1px 1px, rgba(91, 58, 142, 0.08) 1px, transparent 0),
+    linear-gradient(180deg, #f1edf6 0%, #f7f5f8 40%, #faf9f8 100%);
   background-size: 22px 22px, 100% 100%;
   background-attachment: fixed;
 }
@@ -224,7 +230,7 @@ body {
 .encabezado-pagina h1 {
   margin: 0;
   font-size: clamp(1.4rem, 4vw, 1.8rem);
-  font-style: italic;
+  font-weight: 700;
   color: var(--color-primario);
 }
 
@@ -552,7 +558,7 @@ button:disabled {
   padding: 0.5rem 0.85rem;
   border-radius: var(--radio-control);
   background: var(--color-primario-tenue);
-  border: 1px solid #c7e0dd;
+  border: 1px solid #d6c5e8;
   color: var(--color-primario);
   font-weight: 500;
   font-size: 0.82rem;
@@ -585,6 +591,7 @@ button:disabled {
 }
 
 .resultado h2 {
+  font-family: var(--fuente-cuerpo);
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.12em;
@@ -636,8 +643,8 @@ button:disabled {
 }
 
 .palabra--deletreada {
-  background: #ece4f2;
-  color: #6d3f8f;
+  background: #e3ecf7;
+  color: #2f5fa8;
 }
 
 .palabra--desconocida {
@@ -681,8 +688,7 @@ button:disabled {
 .hero-texto h1 {
   margin: 0.2rem 0 0;
   font-size: clamp(2rem, 6vw, 3rem);
-  font-weight: 700;
-  font-style: italic;
+  font-weight: 800;
   color: var(--color-primario);
   letter-spacing: -0.02em;
 }
@@ -723,13 +729,51 @@ button:disabled {
   outline-offset: 2px;
 }
 
-.hero-avatar {
+.hero-avatar-envoltura {
+  position: relative;
   flex: 1;
+}
+
+.hero-avatar {
   overflow: hidden;
 }
 
 .hero-avatar .escena-avatar {
   height: clamp(260px, 42dvh, 380px);
+}
+
+.burbuja {
+  display: none;
+  position: absolute;
+  max-width: 170px;
+  margin: 0;
+  padding: 0.6rem 0.85rem;
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-radius: 14px;
+  box-shadow: var(--sombra);
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--color-texto);
+}
+
+@media (min-width: 880px) {
+  .burbuja {
+    display: block;
+  }
+
+  .burbuja-1 {
+    top: -2.7rem;
+    right: 1rem;
+    color: var(--color-primario);
+  }
+
+  .burbuja-2 {
+    bottom: 1.5rem;
+    left: -1rem;
+    color: var(--color-acento);
+  }
 }
 
 .como-funciona h2 {
