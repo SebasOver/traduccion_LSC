@@ -763,11 +763,12 @@ button:disabled {
   position: absolute;
   max-width: 170px;
   margin: 0;
-  padding: 0.6rem 0.85rem;
-  background: var(--superficie);
-  border: 1px solid var(--linea);
+  padding: 0.65rem 0.9rem;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(10px);
+  border: none;
   border-radius: 14px;
-  box-shadow: var(--sombra);
+  box-shadow: 0 10px 26px rgba(91, 58, 142, 0.18);
   font-size: 0.8rem;
   font-weight: 500;
   line-height: 1.4;
