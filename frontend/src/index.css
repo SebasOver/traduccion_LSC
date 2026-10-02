@@ -293,7 +293,7 @@ body {
   position: relative;
   /* En móvil ocupa buena parte de la pantalla sin taparla entera */
   height: clamp(260px, 48dvh, 420px);
-  background: linear-gradient(#dce9e6, #f2f0ea);
+  background: linear-gradient(#e3dcef, #f2eef7);
   touch-action: pan-y; /* permite seguir haciendo scroll vertical sobre el lienzo */
 }
 
@@ -731,15 +731,31 @@ button:disabled {
 
 .hero-avatar-envoltura {
   position: relative;
-  flex: 1;
+  flex: 1.15;
+}
+
+.hero-avatar-envoltura::before {
+  content: '';
+  position: absolute;
+  inset: -12%;
+  background: radial-gradient(circle, rgba(91, 58, 142, 0.22), transparent 70%);
+  filter: blur(36px);
+  z-index: -1;
 }
 
 .hero-avatar {
   overflow: hidden;
+  border-radius: var(--radio);
 }
 
 .hero-avatar .escena-avatar {
-  height: clamp(260px, 42dvh, 380px);
+  height: clamp(280px, 44dvh, 400px);
+}
+
+@media (min-width: 880px) {
+  .hero-avatar .escena-avatar {
+    height: clamp(380px, 56dvh, 540px);
+  }
 }
 
 .burbuja {

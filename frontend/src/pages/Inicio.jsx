@@ -41,7 +41,7 @@ export default function Inicio() {
           </Link>
         </div>
         <div className="hero-avatar-envoltura">
-          <div className="hero-avatar tarjeta columna-avatar">
+          <div className="hero-avatar">
             <EscenaAvatar senaActual={SALUDO} bucle />
           </div>
           <p className="burbuja burbuja-1">La inclusión también se traduce en señas.</p>
