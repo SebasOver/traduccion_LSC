@@ -20,8 +20,14 @@ Flujo completo de una seña:
   2. En Blender: ajustar RUTA_JSON='hola.json', NOMBRE_ACCION='LSC_hola' y ejecutar.
   3. Retocar curvas si hace falta (Graph Editor) y, sobre todo, posar los dedos
      a mano en los fotogramas clave (la detección de dedos es la menos fiable).
-  4. Guardar la acción con el nombre LSC_xxx y exportar todo a
-     frontend/public/modelos/avatar.glb (formato glTF, con animaciones).
+  4. En el Action Editor, "Push Down" la acción a un strip de NLA (el
+     exportador de glTF solo incluye la acción activa sin eso) y exportar
+     todo a frontend/public/modelos/avatar.glb (formato glTF, con
+     animaciones).
+
+Para varias señas de una sola vez (por ejemplo, los 11 números), usa LOTE
+en vez de RUTA_JSON/NOMBRE_ACCION: cada entrada se procesa y se empuja a su
+propio strip de NLA automáticamente, sin pasos manuales entre una y otra.
 
 Además de la seña, el script también genera una pose de reposo estática
 (LSC_reposo) tomada de un fotograma temprano del MISMO video — normalmente
@@ -46,6 +52,23 @@ RUTA_JSON = "//hola.json"  # // = relativo al archivo .blend
 NOMBRE_ARMATURE = "AvatarRoot"
 NOMBRE_ACCION = "LSC_hola"
 SALTO_FRAMES = 2  # 1 = todos los fotogramas; 2 = uno de cada dos (curvas más limpias)
+
+# Para procesar varias señas de una sola corrida (por ejemplo, los 11
+# números) en vez de cambiar RUTA_JSON/NOMBRE_ACCION y volver a ejecutar el
+# script a mano una por una: llena LOTE con una entrada por seña y ejecuta
+# una sola vez. Cada una se crea, se empuja a su propio strip de NLA por API
+# (equivalente a "Push Down" en el Action Editor, pero sin necesitar esa
+# ventana abierta) y se limpia la acción activa antes de pasar a la
+# siguiente, así no se mezclan entre sí. Si LOTE está vacío, el script usa
+# el modo de una sola seña de siempre (RUTA_JSON/NOMBRE_ACCION arriba).
+#
+# Ejemplo para los números:
+# LOTE = [
+#     {"json": "//numeros/num_0.json", "accion": "LSC_num_0"},
+#     {"json": "//numeros/num_1.json", "accion": "LSC_num_1"},
+#     # ... hasta num_10
+# ]
+LOTE = []
 
 # Cuánto se suaviza la secuencia de rotaciones de la seña (1.0 = sin
 # suavizar; valores menores mezclan cada fotograma con el suavizado
@@ -233,13 +256,14 @@ def orientar_huesos_desde_frame(armature, frame, matriz_inversa, factores=None, 
     return aplicado
 
 
-def crear_animacion_sena(armature, datos, matriz_inversa):
+def crear_animacion_sena(armature, datos, matriz_inversa, nombre_accion=None):
+    nombre_accion = nombre_accion or NOMBRE_ACCION
     for nombre_hueso in HUESOS:
         hueso = armature.pose.bones.get(nombre_hueso)
         if hueso is not None:
             hueso.rotation_mode = "QUATERNION"
 
-    accion = bpy.data.actions.new(NOMBRE_ACCION)
+    accion = bpy.data.actions.new(nombre_accion)
     armature.animation_data_create()
     armature.animation_data.action = accion
 
@@ -303,10 +327,11 @@ def crear_animacion_sena(armature, datos, matriz_inversa):
             hueso.rotation_quaternion = valor
             hueso.keyframe_insert("rotation_quaternion", frame=fotograma_blender)
 
-    print(f"Acción '{NOMBRE_ACCION}' creada con claves en {len(fotogramas)} fotogramas "
+    print(f"Acción '{nombre_accion}' creada con claves en {len(fotogramas)} fotogramas "
           f"(suavizado={SUAVIZADO_ROTACION}).")
     duracion = len(fotogramas) * SALTO_FRAMES / fps_video
     print(f"Duración aproximada: {duracion:.2f} s — recuerda actualizarla en diccionario_lsc.json")
+    return accion
 
 
 def crear_pose_reposo(armature, datos, matriz_inversa):
@@ -349,10 +374,21 @@ def crear_pose_reposo(armature, datos, matriz_inversa):
           f"(pose estática, factor derecho={FACTOR_REPOSO_DERECHO}, izquierdo={FACTOR_REPOSO_IZQUIERDO}).")
 
 
-def main():
-    with open(bpy.path.abspath(RUTA_JSON), encoding="utf8") as archivo:
-        datos = json.load(archivo)
+def empujar_a_nla(armature, accion):
+    """Empuja 'accion' a un strip de NLA nuevo (equivalente a 'Push Down' en
+    el Action Editor) y limpia la acción activa, para que la siguiente seña
+    del lote no se mezcle con esta. Se hace por API en vez de con el
+    operador de UI (bpy.ops.nla.action_pushdown) porque ese operador
+    necesita un área de NLA Editor visible en pantalla, y este script corre
+    desde el editor de texto sin garantía de que esa ventana esté abierta.
+    """
+    pista = armature.animation_data.nla_tracks.new()
+    pista.name = accion.name
+    pista.strips.new(accion.name, 1, accion)
+    armature.animation_data.action = None
 
+
+def main():
     armature = bpy.data.objects[NOMBRE_ARMATURE]
     bpy.context.view_layer.objects.active = armature
     bpy.ops.object.mode_set(mode="POSE")
@@ -360,6 +396,24 @@ def main():
     # Vectores del video expresados en el espacio local del objeto Armature,
     # por si el avatar quedó rotado o escalado al importarlo
     matriz_inversa = armature.matrix_world.inverted().to_3x3()
+
+    if LOTE:
+        # Modo por lotes: una seña por entrada, cada una se crea y se empuja
+        # a su propio strip de NLA automáticamente — no hace falta tocar el
+        # Action Editor a mano entre una y otra.
+        for entrada in LOTE:
+            with open(bpy.path.abspath(entrada["json"]), encoding="utf8") as archivo:
+                datos = json.load(archivo)
+            accion = crear_animacion_sena(armature, datos, matriz_inversa, nombre_accion=entrada["accion"])
+            empujar_a_nla(armature, accion)
+            print(f"'{entrada['accion']}' empujada a NLA.")
+        bpy.ops.object.mode_set(mode="OBJECT")
+        print(f"Lote de {len(LOTE)} señas listo. Exporta a frontend/public/modelos/avatar.glb "
+              "incluyendo todas las acciones/pistas de NLA.")
+        return
+
+    with open(bpy.path.abspath(RUTA_JSON), encoding="utf8") as archivo:
+        datos = json.load(archivo)
 
     if TAMBIEN_CREAR_SENA:
         crear_animacion_sena(armature, datos, matriz_inversa)
