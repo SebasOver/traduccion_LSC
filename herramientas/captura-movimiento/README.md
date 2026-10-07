@@ -10,8 +10,9 @@ Video de la seña (cámara normal)
 JSON de keypoints (cuerpo + manos, suavizado)
         │  importar_en_blender.py (dentro de Blender)
         ▼
-Acción de Blender sobre el esqueleto del avatar
-        │  retoque manual (sobre todo dedos) + exportar glTF
+Acción de Blender sobre el esqueleto del avatar (brazos y, si se activa
+TAMBIEN_ANIMAR_DEDOS, también los dedos)
+        │  revisar/retocar + exportar glTF
         ▼
 frontend/public/modelos/avatar.glb con el clip LSC_xxx
 ```
@@ -56,9 +57,16 @@ frontend/public/modelos/avatar.glb con el clip LSC_xxx
    en el brazo por rotar sin fijar un eje). Solo hace falta generarla una vez;
    en señas posteriores pon `TAMBIEN_CREAR_REPOSO = False`.
 
-4. **Retocar**: la detección de brazos es buena; la de dedos es la menos
-   fiable. Posar las configuraciones de la mano a mano en 2-3 fotogramas clave
-   suele bastar.
+   Si la seña depende de la forma de la mano (números, alfabeto
+   dactilológico), pon además `TAMBIEN_ANIMAR_DEDOS = True` — anima también
+   las falanges de cada dedo a partir de los 21 puntos por mano que ya
+   captura `extraer_keypoints.py`. Antes esto no existía: el script solo
+   movía brazo y antebrazo, y los dedos se posaban enteramente a mano.
+
+4. **Revisar y retocar**: la detección de brazos es buena; la de dedos
+   sigue siendo la menos fiable, incluso animada automáticamente. Revisa el
+   resultado en el viewport y corrige a mano 1-2 fotogramas clave donde
+   algún dedo haya quedado mal.
 
 5. **Push Down a NLA**: en el Action Editor, con cada acción (`LSC_hola` y
    `LSC_reposo`) activa, usa *Push Down Action* (está en el menú "Action" de
@@ -80,11 +88,12 @@ frontend/public/modelos/avatar.glb con el clip LSC_xxx
 Para un grupo de señas (por ejemplo, los 11 números) no hace falta repetir
 los pasos 2, 3 y 5 una por una:
 
-**Paso 2 (extracción), en lote** — un bucle de shell sobre todos los videos:
+**Paso 2 (extracción), en lote** — un bucle de shell sobre todos los videos
+(el `.json` queda junto al `.mp4`, no hace falta una carpeta aparte):
 
 ```bash
 for video in videos/numeros/*.mp4; do
-  python extraer_keypoints.py "$video" --salida "numeros/$(basename "$video" .mp4).json"
+  python extraer_keypoints.py "$video" --salida "videos/numeros/$(basename "$video" .mp4).json"
 done
 ```
 
@@ -92,17 +101,20 @@ done
 `NOMBRE_ACCION` en `importar_en_blender.py`: cada entrada se crea y se
 empuja a su propio strip de NLA automáticamente (por API, sin pasar por el
 Action Editor a mano), así que una sola ejecución del script deja listas
-todas las señas del lote.
+todas las señas del lote. `TAMBIEN_ANIMAR_DEDOS` aplica a todo el lote por
+igual.
 
 ```python
+TAMBIEN_ANIMAR_DEDOS = True  # los números dependen de la forma de la mano
+
 LOTE = [
-    {"json": "//numeros/num_0.json", "accion": "LSC_num_0"},
-    {"json": "//numeros/num_1.json", "accion": "LSC_num_1"},
+    {"json": "//videos/numeros/num_0.json", "accion": "LSC_num_0"},
+    {"json": "//videos/numeros/num_1.json", "accion": "LSC_num_1"},
     # ... hasta num_10
 ]
 ```
 
-Sigue haciendo falta retocar dedos (paso 4) por separado en cada acción
+Sigue haciendo falta revisar/retocar cada acción (paso 4) por separado
 desde el Action Editor, y una sola exportación (paso 6) al final con todas
 las acciones/pistas de NLA incluidas.
 

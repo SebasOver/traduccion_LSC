@@ -3,7 +3,10 @@
 Se ejecuta DENTRO de Blender (pestaña Scripting → Open → Run Script) con el
 avatar ya cargado en la escena. Lee el JSON generado por extraer_keypoints.py
 y crea keyframes de rotación para los huesos de brazos y antebrazos a partir
-de las direcciones hombro→codo y codo→muñeca.
+de las direcciones hombro→codo y codo→muñeca. Con TAMBIEN_ANIMAR_DEDOS =
+True, también anima las falanges de cada dedo a partir de los 21 puntos por
+mano que ya captura extraer_keypoints.py — imprescindible para señas donde
+la forma de la mano ES la seña (números, alfabeto dactilológico).
 
 Configuración: ajusta RUTA_JSON, NOMBRE_ARMATURE, NOMBRE_ACCION y el mapa
 HUESOS según tu esqueleto. Los nombres por defecto son los del rig estándar
@@ -17,9 +20,13 @@ es otra.
 
 Flujo completo de una seña:
   1. python extraer_keypoints.py videos/hola.mp4 --salida hola.json
-  2. En Blender: ajustar RUTA_JSON='hola.json', NOMBRE_ACCION='LSC_hola' y ejecutar.
-  3. Retocar curvas si hace falta (Graph Editor) y, sobre todo, posar los dedos
-     a mano en los fotogramas clave (la detección de dedos es la menos fiable).
+  2. En Blender: ajustar RUTA_JSON='hola.json', NOMBRE_ACCION='LSC_hola'
+     (y TAMBIEN_ANIMAR_DEDOS=True si la seña depende de la forma de la mano)
+     y ejecutar.
+  3. Revisar el resultado. La detección de dedos sigue siendo la menos
+     fiable de las tres (cuerpo, antebrazo, dedos), así que aunque
+     TAMBIEN_ANIMAR_DEDOS anima automáticamente, puede hacer falta retocar
+     a mano 1-2 fotogramas clave donde algún dedo haya quedado raro.
   4. En el Action Editor, "Push Down" la acción a un strip de NLA (el
      exportador de glTF solo incluye la acción activa sin eso) y exportar
      todo a frontend/public/modelos/avatar.glb (formato glTF, con
@@ -37,8 +44,9 @@ mano: no hay riesgo de introducir torsiones raras en el brazo por rotar
 con el mouse sin fijar un eje. Si tu video no empieza en una pose neutral,
 pon TAMBIEN_CREAR_REPOSO = False y posa esa acción a mano en Blender.
 
-Este script es un punto de partida funcional para brazos; cabeza y dedos se
-pueden añadir siguiendo el mismo patrón con los landmarks de cara y manos.
+Este script cubre brazos y dedos; la cabeza se puede añadir siguiendo el
+mismo patrón con los landmarks de cara (pose_landmarks de MediaPipe Face,
+no capturados todavía por extraer_keypoints.py).
 """
 
 import json
@@ -76,6 +84,20 @@ LOTE = []
 # detección ruidosa — comunes en movimientos rápidos — que se notan como
 # saltos o "parpadeos" que van y vuelven en 2-3 fotogramas.
 SUAVIZADO_ROTACION = 0.5
+
+# Pon TAMBIEN_ANIMAR_DEDOS = True para animar también los huesos de los
+# dedos (Thumb/Index/Middle/Ring/Pinky, 3 falanges cada uno) a partir de los
+# 21 puntos por mano que ya captura extraer_keypoints.py — antes el script
+# solo movía brazo y antebrazo, y los dedos había que posarlos a mano.
+# Indispensable para señas donde la forma de la mano ES la seña (números,
+# alfabeto dactilológico); para señas donde solo importa el brazo (como
+# "hola") no hace falta.
+TAMBIEN_ANIMAR_DEDOS = False
+
+# Suavizado de los dedos, por separado del de los brazos: la detección de
+# dedos de MediaPipe tiene más ruido que la del cuerpo, así que conviene un
+# valor más bajo (más suave) para que no tiemblen.
+SUAVIZADO_DEDOS = 0.35
 
 # Pon TAMBIEN_CREAR_SENA = False cuando RUTA_JSON apunte a un video dedicado
 # solo a la pose de reposo (persona quieta, sin hacer ninguna seña) — así el
@@ -119,6 +141,23 @@ HUESOS = {
     "LeftArm": ("hombro_izq", "codo_izq"),
     "LeftForeArm": ("codo_izq", "muneca_izq"),
 }
+
+# Huesos de las falanges (rig Mixamo estándar, sin el lado — se arma como
+# f"{lado}{sufijo}", ej. "RightHandThumb1") → landmarks de MediaPipe Hands
+# dentro del arreglo de 21 puntos de esa mano (0=muñeca; pulgar 1-4;
+# índice 5-8; medio 9-12; anular 13-16; meñique 17-20). No se anima la
+# falange 4 (la punta) de cada dedo: en Mixamo es un hueso terminal sin
+# rotación propia que valga la pena capturar.
+HUESOS_DEDOS = {
+    "HandThumb1": (1, 2), "HandThumb2": (2, 3), "HandThumb3": (3, 4),
+    "HandIndex1": (5, 6), "HandIndex2": (6, 7), "HandIndex3": (7, 8),
+    "HandMiddle1": (9, 10), "HandMiddle2": (10, 11), "HandMiddle3": (11, 12),
+    "HandRing1": (13, 14), "HandRing2": (14, 15), "HandRing3": (15, 16),
+    "HandPinky1": (17, 18), "HandPinky2": (18, 19), "HandPinky3": (19, 20),
+}
+
+# Lado del hueso (prefijo del nombre) → clave de esa mano en el frame del JSON
+LADO_PARA_MANO = {"Right": "mano_derecha", "Left": "mano_izquierda"}
 # ---------------------------------------------------------------------------
 
 
@@ -176,7 +215,8 @@ def normal_palma(mano, matriz_inversa):
     return normal.normalized()
 
 
-def orientar_huesos_desde_frame(armature, frame, matriz_inversa, factores=None, continuidad=None, usar_mano=True):
+def orientar_huesos_desde_frame(armature, frame, matriz_inversa, factores=None, continuidad=None,
+                                 usar_mano=True, animar_dedos=False):
     """Aplica la pose de un fotograma de MediaPipe al pose_bone.matrix de cada
     hueso en HUESOS (sin insertar keyframes). Devuelve True si pudo orientar
     al menos un hueso.
@@ -199,6 +239,10 @@ def orientar_huesos_desde_frame(armature, frame, matriz_inversa, factores=None, 
     levantado) o solo la referencia genérica del cuerpo (más confiable
     cuando la mano está pequeña o parcialmente oculta, como colgando en la
     pose de reposo, donde la detección de MediaPipe Hands es menos fiable).
+    'animar_dedos', si es True, además orienta los huesos de HUESOS_DEDOS de
+    cada mano detectada en este fotograma, usando la misma normal de la
+    palma como referencia de giro (casi nunca es paralela a una falange,
+    así que sirve igual de bien que para el antebrazo).
     """
     frame_pose = frame["pose"]
     hombro_izq = vector_mediapipe(frame_pose[LM["hombro_izq"]])
@@ -253,12 +297,56 @@ def orientar_huesos_desde_frame(armature, frame, matriz_inversa, factores=None, 
         hueso.matrix = matriz_deseada
         bpy.context.view_layer.update()
         aplicado = True
+
+    if animar_dedos:
+        for lado, clave_mano in LADO_PARA_MANO.items():
+            mano = frame.get(clave_mano)
+            if mano is None:
+                continue
+            referencia_palma = normal_palma(mano, matriz_inversa)
+            if referencia_palma is None:
+                continue
+            for sufijo, (origen, destino) in HUESOS_DEDOS.items():
+                nombre_hueso = f"{lado}{sufijo}"
+                hueso = armature.pose.bones.get(nombre_hueso)
+                if hueso is None:
+                    continue
+                a = vector_mediapipe(mano[origen])
+                b = vector_mediapipe(mano[destino])
+                direccion = matriz_inversa @ (b - a)
+                if direccion.length < 1e-6:
+                    continue
+                direccion = direccion.normalized()
+
+                matriz_actual = hueso.matrix.copy()
+                rotacion = construir_rotacion(direccion, referencia_palma)
+
+                if continuidad is not None:
+                    anterior = continuidad.get(nombre_hueso)
+                    if anterior is not None and rotacion.dot(anterior) < 0:
+                        rotacion = -rotacion
+                    continuidad[nombre_hueso] = rotacion.copy()
+
+                matriz_deseada = rotacion.to_matrix().to_4x4()
+                matriz_deseada.translation = matriz_actual.translation
+                hueso.matrix = matriz_deseada
+                bpy.context.view_layer.update()
+                aplicado = True
+
     return aplicado
 
 
 def crear_animacion_sena(armature, datos, matriz_inversa, nombre_accion=None):
     nombre_accion = nombre_accion or NOMBRE_ACCION
-    for nombre_hueso in HUESOS:
+
+    huesos_dedos = (
+        [f"{lado}{sufijo}" for lado in LADO_PARA_MANO for sufijo in HUESOS_DEDOS]
+        if TAMBIEN_ANIMAR_DEDOS else []
+    )
+    huesos_dedos_set = set(huesos_dedos)
+    todos_los_huesos = list(HUESOS) + huesos_dedos
+
+    for nombre_hueso in todos_los_huesos:
         hueso = armature.pose.bones.get(nombre_hueso)
         if hueso is not None:
             hueso.rotation_mode = "QUATERNION"
@@ -277,49 +365,69 @@ def crear_animacion_sena(armature, datos, matriz_inversa, nombre_accion=None):
     # local ya resuelto por Blender.
     continuidad = {}  # evita el salto q / -q entre fotogramas consecutivos
     fotogramas = []
-    crudas = {nombre: [] for nombre in HUESOS}
+    crudas = {nombre: [] for nombre in todos_los_huesos}
     for indice, frame in enumerate(datos["frames"][::SALTO_FRAMES]):
         if frame["pose"] is None:
             continue
         fotograma_blender = 1 + int(indice * SALTO_FRAMES * fps_escena / fps_video)
-        orientar_huesos_desde_frame(armature, frame, matriz_inversa, continuidad=continuidad)
+        orientar_huesos_desde_frame(armature, frame, matriz_inversa, continuidad=continuidad,
+                                     animar_dedos=TAMBIEN_ANIMAR_DEDOS)
         fotogramas.append(fotograma_blender)
         for nombre_hueso in HUESOS:
             hueso = armature.pose.bones.get(nombre_hueso)
             valor = hueso.rotation_quaternion.copy() if hueso is not None else None
             crudas[nombre_hueso].append(valor)
 
+        # Los dedos se leen aparte: si esa mano no se detectó en este
+        # fotograma, hay que guardar None explícitamente en vez de releer
+        # hueso.rotation_quaternion, que se quedaría con el valor de un
+        # fotograma anterior (no se tocó) y se registraría como si fuera de
+        # este fotograma — justo lo que la detección de manos, menos
+        # confiable que la del cuerpo, hace que pase seguido.
+        if TAMBIEN_ANIMAR_DEDOS:
+            for lado, clave_mano in LADO_PARA_MANO.items():
+                detectada = frame.get(clave_mano) is not None
+                for sufijo in HUESOS_DEDOS:
+                    nombre_hueso = f"{lado}{sufijo}"
+                    hueso = armature.pose.bones.get(nombre_hueso)
+                    if detectada and hueso is not None:
+                        crudas[nombre_hueso].append(hueso.rotation_quaternion.copy())
+                    else:
+                        crudas[nombre_hueso].append(None)
+
     # --- Pasada 2: suavizar la secuencia de cada hueso. Un fotograma con
     # detección ruidosa (común en movimientos rápidos, como el vaivén de un
-    # saludo) puede quedar con una rotación bastante distinta a sus vecinos
-    # aunque el signo del cuaternión esté bien — eso se ve como un salto o
-    # un "parpadeo" que va y vuelve en 2-3 fotogramas. El suavizado
-    # exponencial (slerp encadenado, mismo principio que ya usa
-    # extraer_keypoints.py con las posiciones) evita que un solo fotograma
-    # raro se note tanto.
+    # saludo, o en los dedos en general) puede quedar con una rotación
+    # bastante distinta a sus vecinos aunque el signo del cuaternión esté
+    # bien — eso se ve como un salto o un "parpadeo" que va y vuelve en 2-3
+    # fotogramas. El suavizado exponencial (slerp encadenado, mismo
+    # principio que ya usa extraer_keypoints.py con las posiciones) evita
+    # que un solo fotograma raro se note tanto. Los dedos usan su propio
+    # factor (SUAVIZADO_DEDOS), normalmente más agresivo que el del cuerpo.
     suaves = {}
     for nombre_hueso, secuencia in crudas.items():
+        suavizado = SUAVIZADO_DEDOS if nombre_hueso in huesos_dedos_set else SUAVIZADO_ROTACION
         resultado = []
         anterior = None
         for valor in secuencia:
             if valor is None:
                 resultado.append(None)
                 continue
-            if anterior is None or SUAVIZADO_ROTACION >= 1.0:
+            if anterior is None or suavizado >= 1.0:
                 suave = valor
             else:
                 # Reafirma la continuidad de signo también en el valor local,
                 # por si la conversión a espacio local reintrodujo un cambio
                 if valor.dot(anterior) < 0:
                     valor = -valor
-                suave = anterior.slerp(valor, SUAVIZADO_ROTACION)
+                suave = anterior.slerp(valor, suavizado)
             resultado.append(suave)
             anterior = suave
         suaves[nombre_hueso] = resultado
 
     # --- Pasada 3: aplicar los valores suavizados e insertar los keyframes
     for i, fotograma_blender in enumerate(fotogramas):
-        for nombre_hueso in HUESOS:
+        for nombre_hueso in todos_los_huesos:
             hueso = armature.pose.bones.get(nombre_hueso)
             valor = suaves[nombre_hueso][i]
             if hueso is None or valor is None:
@@ -328,7 +436,7 @@ def crear_animacion_sena(armature, datos, matriz_inversa, nombre_accion=None):
             hueso.keyframe_insert("rotation_quaternion", frame=fotograma_blender)
 
     print(f"Acción '{nombre_accion}' creada con claves en {len(fotogramas)} fotogramas "
-          f"(suavizado={SUAVIZADO_ROTACION}).")
+          f"(suavizado={SUAVIZADO_ROTACION}, dedos={'sí, ' + str(SUAVIZADO_DEDOS) if TAMBIEN_ANIMAR_DEDOS else 'no'}).")
     duracion = len(fotogramas) * SALTO_FRAMES / fps_video
     print(f"Duración aproximada: {duracion:.2f} s — recuerda actualizarla en diccionario_lsc.json")
     return accion
