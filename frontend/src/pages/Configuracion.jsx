@@ -18,9 +18,10 @@ export default function Configuracion() {
       <div className="tarjeta seccion-info">
         <h2>Estado de las señas</h2>
         <p>
-          La mayoría de las señas todavía usan un gesto provisional mientras se
-          graban las animaciones reales a partir de captura de movimiento. La
-          sección "Explorar" mostrará cuáles ya están listas.
+          La mayoría de las señas todavía no tienen su animación grabada: el
+          avatar se queda en la pose de reposo al traducirlas, mientras se
+          graban con captura de movimiento. La sección "Explorar" mostrará
+          cuáles ya están listas.
         </p>
       </div>
     </div>

@@ -54,7 +54,7 @@ frontend/public/modelos/avatar.glb con el clip LSC_xxx
    que la persona está de pie, quieta, antes de iniciar la seña) — evita tener
    que posar el reposo a mano, lo cual es fácil de hacer mal (torsiones raras
    en el brazo por rotar sin fijar un eje). Solo hace falta generarla una vez;
-   en señas posteriores puedes poner `TAMBIEN_CREAR_REPOSO = False`.
+   en señas posteriores pon `TAMBIEN_CREAR_REPOSO = False`.
 
 4. **Retocar**: la detección de brazos es buena; la de dedos es la menos
    fiable. Posar las configuraciones de la mano a mano en 2-3 fotogramas clave
@@ -69,15 +69,47 @@ frontend/public/modelos/avatar.glb con el clip LSC_xxx
    `frontend/public/modelos/avatar.glb`, con la casilla *Animation* activada.
    Verificar que el nombre de la acción coincide con el ID del diccionario.
 
-7. **Actualizar el diccionario**: poner la duración real del clip en
-   `backend/src/data/diccionario_lsc.json` y cambiar `<Avatar3D />` por
-   `<AvatarGLTF />` en `EscenaAvatar.jsx` (solo la primera vez).
+7. **Confirmar la duración**: comparar la duración aproximada que imprime el
+   script contra el campo `duracion` de esa seña en
+   `backend/src/data/diccionario_lsc.json` (ya está puesta para todo el
+   vocabulario actual; solo hace falta ajustarla si quedó notablemente
+   distinta).
+
+## Procesar varias señas de una sola corrida
+
+Para un grupo de señas (por ejemplo, los 11 números) no hace falta repetir
+los pasos 2, 3 y 5 una por una:
+
+**Paso 2 (extracción), en lote** — un bucle de shell sobre todos los videos:
+
+```bash
+for video in videos/numeros/*.mp4; do
+  python extraer_keypoints.py "$video" --salida "numeros/$(basename "$video" .mp4).json"
+done
+```
+
+**Paso 3 + 5 (Blender), en lote** — usa `LOTE` en vez de `RUTA_JSON`/
+`NOMBRE_ACCION` en `importar_en_blender.py`: cada entrada se crea y se
+empuja a su propio strip de NLA automáticamente (por API, sin pasar por el
+Action Editor a mano), así que una sola ejecución del script deja listas
+todas las señas del lote.
+
+```python
+LOTE = [
+    {"json": "//numeros/num_0.json", "accion": "LSC_num_0"},
+    {"json": "//numeros/num_1.json", "accion": "LSC_num_1"},
+    # ... hasta num_10
+]
+```
+
+Sigue haciendo falta retocar dedos (paso 4) por separado en cada acción
+desde el Action Editor, y una sola exportación (paso 6) al final con todas
+las acciones/pistas de NLA incluidas.
 
 ## Notas
 
 - `extraer_keypoints.py` aplica un suavizado exponencial (`--alfa`, 0-1) para
   reducir el temblor de la detección.
-- Mientras no existan los clips reales, el frontend ya reproduce poses
-  aproximadas definidas en `frontend/src/data/posesLsc.js` (señas principales)
-  y gestos procedurales (el resto), así que la demo funciona de extremo a
-  extremo sin este pipeline.
+- Mientras una seña no tenga su clip real en `avatar.glb`, el avatar
+  simplemente se queda en la pose de reposo al traducirla — no hay ningún
+  gesto de relleno; la glosa en texto sigue mostrándose igual.
