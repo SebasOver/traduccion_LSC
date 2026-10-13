@@ -164,7 +164,7 @@
       ]
     },
     "multiplicar": {
-      "animacion": "LSC_multiplicar",
+      "animacion": "LSC_multiplicacion",
       "glosa": "MULTIPLICAR",
       "duracion": 1.6,
       "categoria": "matematicas",
@@ -400,7 +400,7 @@
       ]
     },
     "bienvenidos": {
-      "animacion": "LSC_bienvenido",
+      "animacion": "LSC_bienvenidos",
       "glosa": "BIENVENIDO",
       "duracion": 1.5,
       "categoria": "saludos_cortesia",
