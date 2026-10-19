@@ -508,16 +508,30 @@ def main():
     if LOTE:
         # Modo por lotes: una seña por entrada, cada una se crea y se empuja
         # a su propio strip de NLA automáticamente — no hace falta tocar el
-        # Action Editor a mano entre una y otra.
+        # Action Editor a mano entre una y otra. Cada entrada se procesa en
+        # su propio try/except: con lotes grandes (decenas de señas), un solo
+        # JSON corrupto o una ruta mal escrita no debe tirar abajo todo lo
+        # que ya iba bien — se reporta al final cuáles fallaron, en vez de
+        # detener la ejecución a mitad de camino.
+        fallidas = []
         for entrada in LOTE:
-            with open(bpy.path.abspath(entrada["json"]), encoding="utf8") as archivo:
-                datos = json.load(archivo)
-            accion = crear_animacion_sena(armature, datos, matriz_inversa, nombre_accion=entrada["accion"])
-            empujar_a_nla(armature, accion)
-            print(f"'{entrada['accion']}' empujada a NLA.")
+            try:
+                with open(bpy.path.abspath(entrada["json"]), encoding="utf8") as archivo:
+                    datos = json.load(archivo)
+                accion = crear_animacion_sena(armature, datos, matriz_inversa, nombre_accion=entrada["accion"])
+                empujar_a_nla(armature, accion)
+                print(f"'{entrada['accion']}' empujada a NLA.")
+            except Exception as error:
+                fallidas.append((entrada["accion"], str(error)))
+                print(f"ERROR en '{entrada['accion']}' ({entrada['json']}): {error}")
         bpy.ops.object.mode_set(mode="OBJECT")
-        print(f"Lote de {len(LOTE)} señas listo. Exporta a frontend/public/modelos/avatar.glb "
-              "incluyendo todas las acciones/pistas de NLA.")
+        exitosas = len(LOTE) - len(fallidas)
+        print(f"Lote terminado: {exitosas}/{len(LOTE)} señas listas.")
+        if fallidas:
+            print("Fallaron (revisa la ruta del JSON y vuelve a correr solo esas):")
+            for nombre, error in fallidas:
+                print(f"  - {nombre}: {error}")
+        print("Exporta a frontend/public/modelos/avatar.glb incluyendo todas las acciones/pistas de NLA.")
         return
 
     with open(bpy.path.abspath(RUTA_JSON), encoding="utf8") as archivo:
