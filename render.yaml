@@ -1,0 +1,14 @@
+# Despliegue en Render (https://render.com) como un único servicio web:
+# el backend Express sirve la API bajo /api y el frontend compilado.
+# El plan gratuito duerme tras 15 min de inactividad; suficiente para la demo.
+services:
+  - type: web
+    name: traduccion-lsc
+    runtime: node
+    plan: free
+    buildCommand: cd frontend && npm ci && npm run build && cd ../backend && npm ci
+    startCommand: cd backend && node src/index.js
+    healthCheckPath: /api/salud
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false # se configura en el panel de Render, nunca en el repositorio
