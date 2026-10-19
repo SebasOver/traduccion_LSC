@@ -148,8 +148,10 @@ describe('frases completas', () => {
   });
 
   it('frase de ejemplo real de la app: pregunta de cierre', () => {
+    // "muy bien" no es una seña propia en LSC: "muy" se omite como palabra
+    // funcional y "bien" queda como su propia seña.
     expect(glosasDe('Muy bien, terminamos, hasta mañana'))
-      .toBe('MUY-BIEN TERMINAR ADIÓS');
+      .toBe('BIEN TERMINAR ADIÓS');
   });
 });
 

@@ -162,10 +162,10 @@ pueden enchufar después detrás del mismo endpoint sin tocar el frontend.
 `backend/src/data/diccionario_lsc.json` define el vocabulario del prototipo,
 **centrado en el aula de matemáticas básicas**: el dominio es acotado (saludos,
 interacción profesor-estudiante, operaciones y números) y por eso es viable
-cubrirlo bien con un diccionario manual. 83 señas en 6 categorías:
+cubrirlo bien con un diccionario manual. 81 señas en 6 categorías:
 
-- `saludos_cortesia` (11): hola, buenos días, buenas tardes, adiós, gracias,
-  por favor, bienvenidos, bien, muy bien, sí, no.
+- `saludos_cortesia` (10): hola, buenos días, buenas tardes, adiós, gracias,
+  por favor, bienvenidos, bien, sí, no.
 - `interaccion_aula` (30): explicar, entender, repetir, responder, ayudar,
   mirar, escribir, leer, escuchar, hacer, tener, tablero, página, tema,
   empezar, terminar, descanso, atención, silencio, recordar, hoy, mañana,
@@ -173,8 +173,8 @@ cubrirlo bien con un diccionario manual. 83 señas en 6 categorías:
 - `preguntas` (6): qué, cómo, quién, dónde, cuándo, por qué.
 - `academico_general` (10): tarea, examen, profesor, estudiante, universidad,
   clase, estudiar, aprender, libro, pregunta.
-- `matematicas` (15): matemáticas, número, sumar, restar, multiplicar, dividir,
-  igual, resultado, problema, ejercicio, calcular, mitad, mayor, menor, cuánto.
+- `matematicas` (14): matemáticas, número, sumar, restar, multiplicar, dividir,
+  igual, problema, ejercicio, calcular, mitad, mayor, menor, cuánto.
 - `numeros` (11): cero a diez.
 
 Cada entrada define la glosa, el ID del clip de animación, su duración en
@@ -202,7 +202,7 @@ Ejemplos reales:
 | Buenos días estudiantes, bienvenidos a la clase de matemáticas | BUENOS-DÍAS ESTUDIANTE BIENVENIDO CLASE MATEMÁTICAS |
 | ¿Entendieron el tema o tienen alguna pregunta? | ENTENDER TEMA TENER PREGUNTA |
 | ¿Cuánto es 7 por 8? | CUÁNTO SIETE MULTIPLICAR OCHO |
-| Muy bien, terminamos, hasta mañana | MUY-BIEN TERMINAR ADIÓS |
+| Muy bien, terminamos, hasta mañana | BIEN TERMINAR ADIÓS |
 | El niño se llama Andrés | N I Ñ O L L A M A A N D R E S |
 
 Para ampliar el vocabulario solo hay que agregar entradas al JSON (y, cuando
