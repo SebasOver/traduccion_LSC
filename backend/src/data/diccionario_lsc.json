@@ -205,31 +205,6 @@
         "operación"
       ]
     },
-    "ejercicio": {
-      "animacion": "LSC_ejercicio",
-      "glosa": "EJERCICIO",
-      "duracion": 1.6,
-      "categoria": "matematicas",
-      "sinonimos": [
-        "actividad",
-        "práctica",
-        "taller"
-      ]
-    },
-    "calcular": {
-      "animacion": "LSC_calcular",
-      "glosa": "CALCULAR",
-      "duracion": 1.6,
-      "categoria": "matematicas",
-      "sinonimos": [
-        "cálculo",
-        "calcula",
-        "cuenta",
-        "contar",
-        "calculen",
-        "calculemos"
-      ]
-    },
     "mitad": {
       "animacion": "LSC_mitad",
       "glosa": "MITAD",
@@ -581,15 +556,6 @@
         "pizarrón"
       ]
     },
-    "página": {
-      "animacion": "LSC_pagina",
-      "glosa": "PÁGINA",
-      "duracion": 1.4,
-      "categoria": "interaccion_aula",
-      "sinonimos": [
-        "hoja"
-      ]
-    },
     "tema": {
       "animacion": "LSC_tema",
       "glosa": "TEMA",
@@ -622,16 +588,6 @@
         "finalizar",
         "acabar",
         "acabamos"
-      ]
-    },
-    "descanso": {
-      "animacion": "LSC_descanso",
-      "glosa": "DESCANSO",
-      "duracion": 1.4,
-      "categoria": "interaccion_aula",
-      "sinonimos": [
-        "recreo",
-        "pausa"
       ]
     },
     "atención": {
@@ -673,13 +629,6 @@
       "animacion": "LSC_manana",
       "glosa": "MAÑANA",
       "duracion": 1.2,
-      "categoria": "interaccion_aula",
-      "sinonimos": []
-    },
-    "ahora": {
-      "animacion": "LSC_ahora",
-      "glosa": "AHORA",
-      "duracion": 1.1,
       "categoria": "interaccion_aula",
       "sinonimos": []
     },
