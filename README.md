@@ -162,20 +162,24 @@ pueden enchufar después detrás del mismo endpoint sin tocar el frontend.
 `backend/src/data/diccionario_lsc.json` define el vocabulario del prototipo,
 **centrado en el aula de matemáticas básicas**: el dominio es acotado (saludos,
 interacción profesor-estudiante, operaciones y números) y por eso es viable
-cubrirlo bien con un diccionario manual. 81 señas en 6 categorías:
+cubrirlo bien con un diccionario manual. 76 señas en 6 categorías:
 
 - `saludos_cortesia` (10): hola, buenos días, buenas tardes, adiós, gracias,
   por favor, bienvenidos, bien, sí, no.
-- `interaccion_aula` (30): explicar, entender, repetir, responder, ayudar,
-  mirar, escribir, leer, escuchar, hacer, tener, tablero, página, tema,
-  empezar, terminar, descanso, atención, silencio, recordar, hoy, mañana,
-  ahora, casa, fácil, difícil, importante, yo, tú, ustedes.
+- `interaccion_aula` (27): explicar, entender, repetir, responder, ayudar,
+  mirar, escribir, leer, escuchar, hacer, tener, tablero, tema,
+  empezar, terminar, atención, silencio, recordar, hoy, mañana,
+  casa, fácil, difícil, importante, yo, tú, ustedes.
 - `preguntas` (6): qué, cómo, quién, dónde, cuándo, por qué.
 - `academico_general` (10): tarea, examen, profesor, estudiante, universidad,
   clase, estudiar, aprender, libro, pregunta.
-- `matematicas` (14): matemáticas, número, sumar, restar, multiplicar, dividir,
-  igual, problema, ejercicio, calcular, mitad, mayor, menor, cuánto.
+- `matematicas` (12): matemáticas, número, sumar, restar, multiplicar, dividir,
+  igual, problema, mitad, mayor, menor, cuánto.
 - `numeros` (11): cero a diez.
+
+Página, descanso, ahora, ejercicio y calcular se quitaron del diccionario:
+no son señas propias en LSC, así que esas palabras (y sus sinónimos) se
+deletrean con el alfabeto dactilológico en vez de tener una seña asignada.
 
 Cada entrada define la glosa, el ID del clip de animación, su duración en
 segundos, la categoría y los sinónimos/formas verbales que se traducen con la
