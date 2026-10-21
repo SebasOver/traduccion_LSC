@@ -8,6 +8,7 @@ import path from 'path';
 import { existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 import traducirRouter from './routes/traducir.js';
+import diccionarioRouter from './routes/diccionario.js';
 
 dotenv.config();
 
@@ -25,6 +26,9 @@ app.get('/api/salud', (req, res) => {
 
 // Traducción de texto/audio a secuencia de señas LSC
 app.use('/api/traducir', traducirRouter);
+
+// Vocabulario completo (señas + alfabeto), para la sección "Explorar"
+app.use('/api/diccionario', diccionarioRouter);
 
 // Errores de subida de archivos (ej. audio demasiado grande)
 app.use((error, req, res, next) => {

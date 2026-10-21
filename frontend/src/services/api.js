@@ -29,6 +29,11 @@ export async function traducirTexto(texto) {
   return procesarRespuesta(respuesta);
 }
 
+export async function obtenerDiccionario() {
+  const respuesta = await peticion('/api/diccionario');
+  return procesarRespuesta(respuesta);
+}
+
 export async function traducirAudio(blobAudio) {
   const formulario = new FormData();
   const extension = blobAudio.type.includes('ogg') ? 'ogg' : 'webm';

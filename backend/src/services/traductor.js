@@ -226,3 +226,26 @@ export function traducir(texto) {
     secuencia,
   };
 }
+
+// Diccionario completo para la sección "Explorar": una entrada por palabra
+// base (sin repetir por cada sinónimo), más el alfabeto dactilológico.
+export function obtenerDiccionario() {
+  const senas = Object.entries(diccionario.senas).map(([palabra, entrada]) => ({
+    palabra,
+    glosa: entrada.glosa,
+    animacion: entrada.animacion,
+    duracion: entrada.duracion,
+    categoria: entrada.categoria,
+    sinonimos: entrada.sinonimos ?? [],
+    enfoqueManos: entrada.enfoqueManos ?? false,
+  }));
+
+  const letras = Object.entries(alfabeto.letras).map(([letra, entrada]) => ({
+    letra,
+    glosa: entrada.glosa,
+    animacion: entrada.animacion,
+    duracion: entrada.duracion,
+  }));
+
+  return { categorias: diccionario.categorias, senas, letras };
+}
