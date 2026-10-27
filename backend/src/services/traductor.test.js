@@ -3,7 +3,7 @@
 // qué estado queda cada palabra, no en los detalles internos de cómo se
 // calculan.
 import { describe, it, expect } from 'vitest';
-import { traducir } from './traductor.js';
+import { traducir, obtenerDiccionario } from './traductor.js';
 
 function glosasDe(texto) {
   return traducir(texto).glosas;
@@ -167,5 +167,24 @@ describe('casos borde', () => {
     const r = traducir('  Hola   Profesor  ');
     expect(r.textoOriginal).toBe('  Hola   Profesor  ');
     expect(r.glosas).toBe('HOLA PROFESOR');
+  });
+});
+
+describe('obtenerDiccionario (para la sección Explorar)', () => {
+  it('incluye una entrada por palabra base, con glosa y animación', () => {
+    const { senas } = obtenerDiccionario();
+    const profesor = senas.find((s) => s.palabra === 'profesor');
+    expect(profesor).toMatchObject({ glosa: 'PROFESOR', animacion: 'LSC_profesor' });
+  });
+
+  it('no incluye entradas separadas por cada sinónimo', () => {
+    const { senas } = obtenerDiccionario();
+    expect(senas.find((s) => s.palabra === 'maestro')).toBeUndefined();
+  });
+
+  it('incluye el alfabeto dactilológico aparte', () => {
+    const { letras } = obtenerDiccionario();
+    expect(letras).toHaveLength(27);
+    expect(letras.find((l) => l.letra === 'a')).toMatchObject({ glosa: 'A' });
   });
 });

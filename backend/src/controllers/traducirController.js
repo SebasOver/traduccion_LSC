@@ -1,4 +1,4 @@
-import { traducir } from '../services/traductor.js';
+import { traducir, obtenerDiccionario } from '../services/traductor.js';
 import { transcribirAudio, ErrorTranscripcion } from '../services/whisper.js';
 
 // POST /traducir — recibe { texto } y devuelve la secuencia de señas LSC
@@ -18,6 +18,12 @@ export function traducirTexto(req, res) {
   }
 
   return res.json(traducir(texto.trim()));
+}
+
+// GET /diccionario — devuelve el vocabulario completo (señas + alfabeto),
+// para la sección "Explorar" del frontend
+export function listarDiccionario(req, res) {
+  return res.json(obtenerDiccionario());
 }
 
 // POST /traducir/audio — recibe un archivo de audio, lo transcribe con Whisper
