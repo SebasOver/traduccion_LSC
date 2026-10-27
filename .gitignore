@@ -3,7 +3,10 @@ node_modules/
 venv/
 __pycache__/
 *.pyc
-
+# Scripts temporales de Claude para corregir señas en Blender
+_lsc_tools.py
+_lsc_rebuild.py
+_tmp_*.png
 # Respaldos automáticos de Blender (se generan solos al guardar)
 *.blend1
 *.blend2
