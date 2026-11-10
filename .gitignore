@@ -18,6 +18,7 @@ _tmp_*.png
 # Builds
 frontend/dist/
 backend/dist/
+backup-repo/
 
 # Archivos de audio subidos durante pruebas
 backend/uploads/
