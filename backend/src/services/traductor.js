@@ -1,9 +1,10 @@
 // Servicio de traducción: convierte texto en español a una secuencia de señas LSC
 // usando el diccionario JSON. Estrategia del prototipo: mapeo palabra→seña con
 // soporte de expresiones de varias palabras ("buenos días" es UNA seña),
-// omisión de palabras funcionales (artículos, preposiciones), ya que la
-// gramática de la LSC no las utiliza como el español, y deletreo con el
-// alfabeto dactilológico para palabras fuera del diccionario.
+// omisión de palabras funcionales (artículos, preposiciones) y deletreo con
+// el alfabeto dactilológico para palabras fuera del diccionario. La omisión
+// es una regla de simplificación de este prototipo: no describe la gramática
+// de la LSC ni ha sido validada por un lingüista o un intérprete.
 import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -15,7 +16,7 @@ const RUTA_ALFABETO = path.join(__dirname, '..', 'data', 'alfabeto_dactilologico
 const diccionario = JSON.parse(readFileSync(RUTA_DICCIONARIO, 'utf8'));
 const alfabeto = JSON.parse(readFileSync(RUTA_ALFABETO, 'utf8'));
 
-// Palabras funcionales que se omiten en la traducción (la LSC no las seña).
+// Palabras funcionales que este prototipo omite en la traducción.
 // Se comparan en minúsculas pero CONSERVANDO tildes, para distinguir "que"
 // (conjunción, se omite) de "qué" (interrogativo, que sí tiene seña).
 const PALABRAS_OMITIDAS = new Set([
@@ -166,7 +167,7 @@ export function traducir(texto) {
   while (i < tokens.length) {
     const token = tokens[i];
 
-    // 1. Expresiones de varias palabras (una sola seña en LSC)
+    // 1. Expresiones de varias palabras (una sola entrada del diccionario)
     const frase = coincideFrase(tokensNormalizados, i);
     if (frase) {
       const textoFrase = tokens.slice(i, i + frase.tokens.length).join(' ');
@@ -190,14 +191,14 @@ export function traducir(texto) {
       continue;
     }
 
-    // 4. Palabras funcionales que la LSC omite
+    // 4. Palabras funcionales que el prototipo omite
     if (PALABRAS_OMITIDAS.has(token.toLowerCase())) {
       resultado.push({ palabra: token, estado: 'omitida' });
       i += 1;
       continue;
     }
 
-    // 4. Búsqueda en el diccionario (con tildes normalizadas y plurales)
+    // 5. Búsqueda en el diccionario (con tildes normalizadas y plurales)
     const sena = buscarSena(tokensNormalizados[i]);
     if (sena) {
       resultado.push(aSena(token, sena));

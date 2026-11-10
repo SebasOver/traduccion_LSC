@@ -5,7 +5,7 @@ import { IconoMicrofono, IconoDetener } from './Iconos.jsx';
 
 const ETIQUETA_ESTADO = {
   traducida: 'Traducida a seña',
-  omitida: 'Omitida (palabra funcional, la LSC no la usa)',
+  omitida: 'Omitida (palabra funcional; regla de este prototipo)',
   deletreada: 'Deletreada con el alfabeto dactilológico (no está en el diccionario)',
   desconocida: 'Sin seña en el diccionario',
 };
@@ -88,8 +88,8 @@ export default function PanelTraduccion({ onTraducir, onTraducirAudio, traduccio
         </div>
         <p className="nota-voz">
           {usaVozNavegador
-            ? 'Voz: reconocimiento del navegador (gratuito, sin clave de API)'
-            : 'Voz: Whisper en el servidor (requiere OPENAI_API_KEY)'}
+            ? 'Voz: reconocimiento del navegador (gratuito). El audio lo procesa el servicio de voz del navegador.'
+            : 'Voz: Whisper en el servidor (requiere OPENAI_API_KEY). El audio se envía a OpenAI para transcribirlo.'}
         </p>
       </form>
 

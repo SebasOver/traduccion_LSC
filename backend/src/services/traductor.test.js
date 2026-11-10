@@ -18,7 +18,7 @@ describe('búsqueda básica en el diccionario', () => {
     const r = traducir('profesor');
     expect(r.glosas).toBe('PROFESOR');
     expect(r.resultado).toEqual([
-      { palabra: 'profesor', estado: 'traducida', glosa: 'PROFESOR', animacion: 'LSC_profesor', duracion: 1.6 },
+      { palabra: 'profesor', estado: 'traducida', glosa: 'PROFESOR', animacion: 'LSC_profesor', duracion: expect.any(Number) },
     ]);
   });
 
@@ -126,7 +126,7 @@ describe('enfoqueManos (señas que se hacen solo con los dedos)', () => {
   it('marca los números con enfoqueManos', () => {
     const r = traducir('7');
     expect(r.secuencia).toEqual([
-      { glosa: 'SIETE', animacion: 'LSC_num_7', duracion: 1.0, enfoqueManos: true },
+      { glosa: 'SIETE', animacion: 'LSC_num_7', duracion: expect.any(Number), enfoqueManos: true },
     ]);
   });
 

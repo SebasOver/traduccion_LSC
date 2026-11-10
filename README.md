@@ -1,67 +1,80 @@
 # Traductor LSC — Texto y voz a Lengua de Señas Colombiana
 
-Prototipo de aplicación web que traduce texto y audio en español a Lengua de
-Señas Colombiana (LSC), representada mediante un avatar 3D animado.
-Proyecto de tesis.
+Prototipo web que recibe una frase en español, escrita o dictada, y la muestra
+como una secuencia de señas de Lengua de Señas Colombiana (LSC) en un avatar 3D.
+El vocabulario está acotado al aula de matemáticas. Proyecto de tesis.
+
+**Es un prototipo experimental.** Ninguna seña ha sido revisada por una persona
+sorda ni por un intérprete certificado, y el motor no reordena la frase: la
+salida es una secuencia de glosas en el orden del español, no una traducción
+validada a LSC.
 
 ## Arquitectura
 
 ```
-Texto / Audio ──► Backend (Node.js + Express)
-                    ├── Whisper (audio → texto)
-                    └── Diccionario LSC (texto → secuencia de animaciones)
-                            │
-                            ▼
-                  Frontend (React + Three.js)
-                    └── Avatar GLTF que reproduce las animaciones
+Navegador (React + Vite + Three.js)
+  ├── Texto escrito ───────────────┐
+  ├── Voz: Web Speech API ─────────┤──► POST /api/traducir ──► motor (traductor.js)
+  └── Voz sin Web Speech API ──────────► POST /api/traducir/audio ──► Whisper ──► motor
+                                                                        │
+  Avatar (avatar.glb) ◄── secuencia JSON (glosa, animación, duración) ◄─┘
+
+Servidor (Node.js + Express): API bajo /api y, en producción, frontend/dist
 ```
 
 ## Estructura del proyecto
 
 ```
 traduccion_LSC/
-├── backend/                  # API REST (Node.js + Express)
+├── backend/
+│   ├── scripts/
+│   │   ├── duraciones-clips.js         # lee la duración de cada clip de avatar.glb
+│   │   └── sincronizar-duraciones.js   # copia esas duraciones al vocabulario
 │   ├── src/
-│   │   ├── index.js          # Punto de entrada del servidor
-│   │   ├── routes/           # Definición de rutas (ej. /traducir)
-│   │   ├── controllers/      # Lógica de cada endpoint
-│   │   ├── services/         # Traducción, Whisper, etc.
-│   │   └── data/             # diccionario_lsc.json (palabra → animación)
-│   ├── .env.example          # Plantilla de variables de entorno
+│   │   ├── index.js                    # servidor Express
+│   │   ├── routes/                     # traducir.js, diccionario.js
+│   │   ├── controllers/                # traducirController.js
+│   │   ├── services/                   # traductor.js (motor), whisper.js, pruebas
+│   │   └── data/                       # diccionario_lsc.json, alfabeto_dactilologico.json,
+│   │                                   # vocabulario.test.js
+│   ├── .env.example
 │   └── package.json
-├── frontend/                 # Interfaz web (React + Vite + Three.js)
-│   ├── public/
-│   │   ├── modelos/          # Modelos GLTF/GLB del avatar (MakeHuman/Blender)
-│   │   └── animaciones/      # Clips de animación de las señas
+├── frontend/
+│   ├── public/modelos/avatar.glb       # avatar con todos los clips
 │   ├── src/
-│   │   ├── components/       # Avatar3D, panel de entrada, etc.
-│   │   ├── services/         # Cliente HTTP hacia el backend
-│   │   ├── hooks/            # Hooks reutilizables (audio, animaciones)
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   ├── index.html
+│   │   ├── pages/                      # Inicio, Traducir, Explorar, Configuracion
+│   │   ├── components/                 # EscenaAvatar, AvatarGLTF, PanelTraduccion,
+│   │   │                               # LineaTiempoSenas, Layout, Iconos…
+│   │   ├── hooks/                      # useReproductorSenas, useReconocimientoVoz,
+│   │   │                               # useGrabadorAudio
+│   │   ├── services/api.js             # cliente HTTP
+│   │   ├── App.jsx, main.jsx, index.css
 │   ├── vite.config.js
 │   └── package.json
+├── herramientas/captura-movimiento/    # video → MediaPipe → Blender (ver su README)
+├── render.yaml
 └── README.md
 ```
 
+`frontend/src/components/Avatar3D.jsx` y `frontend/src/data/posesLsc.js` son de
+la primera versión (un muñeco articulado con poses escritas a mano). La
+aplicación ya no los usa: el avatar que se ve es `AvatarGLTF.jsx` con
+`avatar.glb`.
+
 ## Requisitos
 
-- Node.js 18 o superior
-- npm
+- Node.js 18 o superior y npm.
+- Para producir señas nuevas: Python 3.9–3.11 y Blender (ver
+  `herramientas/captura-movimiento/README.md`).
 
 ## Puesta en marcha (desarrollo)
 
-### Backend
-
 ```bash
 cd backend
-cp .env.example .env   # completar OPENAI_API_KEY cuando se integre Whisper
+cp .env.example .env   # opcional; ver "Variables de entorno"
 npm install
 npm run dev            # http://localhost:3001
 ```
-
-### Frontend
 
 ```bash
 cd frontend
@@ -69,230 +82,187 @@ npm install
 npm run dev            # http://localhost:5173
 ```
 
-El frontend redirige las peticiones que empiezan por `/api` al backend
-(configurado en `vite.config.js`), por lo que ambos deben estar corriendo.
+El frontend redirige al backend las peticiones que empiezan por `/api`
+(`vite.config.js`), así que los dos deben estar corriendo.
+
+### Variables de entorno (`backend/.env`)
+
+| Variable | Para qué sirve | ¿Obligatoria? | Si falta |
+|---|---|---|---|
+| `PORT` | Puerto del servidor | No | Usa 3001 |
+| `FRONTEND_URL` | Origen permitido por CORS en desarrollo | No | Usa `http://localhost:5173` |
+| `OPENAI_API_KEY` | Clave para transcribir con Whisper | No | `/api/traducir/audio` responde 503; el texto y la voz del navegador siguen funcionando |
+
+La clave de OpenAI se lee solo en el servidor. No va en el repositorio (`.env`
+está en `.gitignore`) ni en el código del frontend. En Render se pone en el
+panel del servicio.
 
 ### Pruebas
 
 ```bash
 cd backend
-npm test    # Vitest — cubre el motor de traducción (traductor.js)
+npm test
 ```
 
-21 pruebas: búsqueda en el diccionario (sinónimos, plurales, tildes),
-palabras funcionales, frases de varias palabras, cifras, operadores
-contextuales, dactilología y frases completas de ejemplo.
+29 pruebas con Vitest. 27 cubren el motor (`src/services/traductor.test.js`):
+búsqueda en el diccionario, palabras funcionales, expresiones de varias
+palabras, cifras, operadores contextuales, deletreo, frases completas y el
+listado para Explorar. Las otras 2 (`src/data/vocabulario.test.js`) comprueban
+que cada seña y cada letra tenga su clip en `avatar.glb` y que la duración
+anotada sea la del clip.
+
+Si se vuelve a exportar `avatar.glb` desde Blender, hay que igualar las
+duraciones del vocabulario con las de los clips:
+
+```bash
+cd backend
+npm run sincronizar-duraciones
+npm test
+```
 
 ## API
 
-### `POST /api/traducir`
-
-Recibe texto en español y devuelve la secuencia de señas LSC a reproducir.
+| Método y ruta | Entrada | Respuesta |
+|---|---|---|
+| `GET /api/salud` | — | `{"estado":"ok","servicio":"traduccion-lsc-backend"}` |
+| `POST /api/traducir` | JSON `{ "texto": "…" }`, hasta 1000 caracteres | `textoOriginal`, `glosas`, `resultado`, `secuencia` |
+| `POST /api/traducir/audio` | multipart, campo `audio`, hasta 25 MB | lo anterior más `textoTranscrito` |
+| `GET /api/diccionario` | — | `categorias`, `senas` (76), `letras` (27) |
 
 ```bash
 curl -X POST http://localhost:3001/api/traducir \
   -H 'Content-Type: application/json' \
-  -d '{"texto": "El profesor dejó una tarea"}'
+  -d '{"texto": "Hola Ana, ¿cuánto es 7 por 8?"}'
 ```
 
-Respuesta (resumida):
+Respuesta (se abrevia el arreglo `resultado`):
 
 ```json
 {
-  "textoOriginal": "El profesor dejó una tarea",
-  "glosas": "PROFESOR TAREA",
+  "textoOriginal": "Hola Ana, ¿cuánto es 7 por 8?",
+  "glosas": "HOLA A N A CUÁNTO SIETE MULTIPLICAR OCHO",
   "resultado": [
-    { "palabra": "El", "estado": "omitida" },
-    { "palabra": "profesor", "estado": "traducida", "glosa": "PROFESOR",
-      "animacion": "LSC_profesor", "duracion": 1.6 },
-    { "palabra": "dejó", "estado": "desconocida" },
-    { "palabra": "una", "estado": "omitida" },
-    { "palabra": "tarea", "estado": "traducida", "glosa": "TAREA",
-      "animacion": "LSC_tarea", "duracion": 1.5 }
+    { "palabra": "Hola", "estado": "traducida", "glosa": "HOLA",
+      "animacion": "LSC_hola", "duracion": 2.75 },
+    { "palabra": "A", "estado": "deletreada", "glosa": "A",
+      "animacion": "LSC_letra_a", "duracion": 1.09, "enfoqueManos": true },
+    { "palabra": "es", "estado": "omitida" }
   ],
   "secuencia": [
-    { "glosa": "PROFESOR", "animacion": "LSC_profesor", "duracion": 1.6 },
-    { "glosa": "TAREA", "animacion": "LSC_tarea", "duracion": 1.5 }
+    { "glosa": "HOLA", "animacion": "LSC_hola", "duracion": 2.75 },
+    { "glosa": "A", "animacion": "LSC_letra_a", "duracion": 1.09, "enfoqueManos": true }
   ]
 }
 ```
 
-Estados posibles de cada palabra:
+Estados de cada palabra:
 
-- `traducida`: existe una seña en el diccionario (búsqueda con normalización de
-  tildes, plurales simples y sinónimos).
-- `omitida`: palabra funcional (artículos, preposiciones…) que la LSC no seña.
-- `deletreada`: la palabra no está en el diccionario, así que se deletrea
-  letra por letra con el alfabeto dactilológico (`backend/src/data/alfabeto_dactilologico.json`) —
-  útil para nombres propios y palabras técnicas.
-- `desconocida`: ni siquiera se pudo deletrear (caso extremo; en la práctica
-  casi todo lo que llega a este punto tiene letras del alfabeto español).
+- `traducida`: tiene entrada en el diccionario (se ignoran mayúsculas y tildes,
+  y se prueban plurales simples y sinónimos).
+- `omitida`: palabra funcional (artículos, preposiciones…). Omitirla es una
+  regla de este prototipo, no una afirmación sobre la gramática de la LSC.
+- `deletreada`: no está en el diccionario y se deletrea con el alfabeto
+  dactilológico, una letra por seña. Las tildes se quitan: "Andrés" → A N D R E S.
+- `desconocida`: no tiene ninguna letra que se pueda deletrear.
 
-### `POST /api/traducir/audio`
+Errores (todos con cuerpo `{ "error": "mensaje" }`, que el frontend muestra tal cual):
 
-Recibe un archivo de audio (campo multipart `audio`, máx. 25 MB), lo transcribe
-a texto con Whisper (API de OpenAI) y devuelve la misma estructura que
-`POST /api/traducir` más el campo `textoTranscrito`. Requiere `OPENAI_API_KEY` en
-el `.env` del backend; sin ella responde 503 con un mensaje explicativo.
-
-```bash
-curl -X POST http://localhost:3001/api/traducir/audio -F "audio=@grabacion.webm"
-```
+| Ruta | Código | Cuándo |
+|---|---|---|
+| `/api/traducir` | 400 | Falta `texto`, está vacío o supera 1000 caracteres |
+| `/api/traducir/audio` | 400 | No llegó un archivo de audio, o supera 25 MB |
+| `/api/traducir/audio` | 422 | Whisper no reconoció ninguna palabra |
+| `/api/traducir/audio` | 503 | Falta `OPENAI_API_KEY` o la clave no es válida |
+| `/api/traducir/audio` | 502 | Whisper respondió con otro error |
+| `/api/traducir/audio` | 500 | Error inesperado del servidor |
 
 ## Reconocimiento de voz
 
-El botón «Hablar» usa dos vías, en este orden:
+El botón «Hablar» usa dos vías:
 
-1. **Web Speech API del navegador (gratuita, por defecto)**: Chrome, Edge y
-   Android la incluyen sin costo ni clave de API (`lang: es-CO`), con
-   transcripción en vivo dentro del cuadro de texto. No funciona en Firefox
-   ni en algunos iOS.
-2. **Whisper en el servidor (respaldo)**: si el navegador no soporta la Web
-   Speech API, se graba el audio con MediaRecorder y se envía a
-   `POST /api/traducir/audio` (requiere `OPENAI_API_KEY`; ~USD 0.006/minuto).
+1. **Web Speech API del navegador** (Chrome, Edge, Chrome en Android): sin
+   clave ni costo, con el texto apareciendo mientras se habla (`lang: es-CO`).
+   El navegador envía el audio a su propio servicio de reconocimiento; la
+   aplicación no lo recibe.
+2. **Whisper en el servidor** (Firefox y navegadores sin Web Speech API): el
+   audio se graba con MediaRecorder y se envía a `POST /api/traducir/audio`,
+   que lo reenvía a la API de OpenAI. Necesita `OPENAI_API_KEY`.
 
-En ambos casos el navegador pide permiso de micrófono (requiere HTTPS o
-localhost). Otras alternativas gratuitas evaluadas: Whisper open-source en el
-propio servidor con `faster-whisper` (gratis pero necesita más RAM/CPU que el
-plan gratuito de Render) y Vosk (ligero y offline, menor calidad); ambas se
-pueden enchufar después detrás del mismo endpoint sin tocar el frontend.
+En los dos casos el navegador pide permiso de micrófono, y solo lo concede en
+HTTPS o en localhost.
 
-## Diccionario LSC
+## Vocabulario
 
-`backend/src/data/diccionario_lsc.json` define el vocabulario del prototipo,
-**centrado en el aula de matemáticas básicas**: el dominio es acotado (saludos,
-interacción profesor-estudiante, operaciones y números) y por eso es viable
-cubrirlo bien con un diccionario manual. 76 señas en 6 categorías:
+`backend/src/data/diccionario_lsc.json` tiene 76 entradas en 6 categorías:
 
-- `saludos_cortesia` (10): hola, buenos días, buenas tardes, adiós, gracias,
-  por favor, bienvenidos, bien, sí, no.
-- `interaccion_aula` (27): explicar, entender, repetir, responder, ayudar,
-  mirar, escribir, leer, escuchar, hacer, tener, tablero, tema,
-  empezar, terminar, atención, silencio, recordar, hoy, mañana,
-  casa, fácil, difícil, importante, yo, tú, ustedes.
-- `preguntas` (6): qué, cómo, quién, dónde, cuándo, por qué.
-- `academico_general` (10): tarea, examen, profesor, estudiante, universidad,
-  clase, estudiar, aprender, libro, pregunta.
-- `matematicas` (12): matemáticas, número, sumar, restar, multiplicar, dividir,
-  igual, problema, mitad, mayor, menor, cuánto.
-- `numeros` (11): cero a diez.
+- `saludos_cortesia` (10), `interaccion_aula` (27), `preguntas` (6),
+  `academico_general` (10), `matematicas` (12), `numeros` (11, del cero al diez).
 
-Página, descanso, ahora, ejercicio y calcular se quitaron del diccionario:
-no son señas propias en LSC, así que esas palabras (y sus sinónimos) se
-deletrean con el alfabeto dactilológico en vez de tener una seña asignada.
+`backend/src/data/alfabeto_dactilologico.json` tiene las 27 letras (a–z y ñ).
+Las vocales con tilde y la ü no tienen entrada propia: se deletrean con la
+letra base.
 
-Cada entrada define la glosa, el ID del clip de animación, su duración en
-segundos, la categoría y los sinónimos/formas verbales que se traducen con la
-misma seña ("parcial" → EXAMEN, "calculen" → CALCULAR, "chao" → ADIÓS).
+Cada entrada guarda la glosa, el nombre del clip (`animacion`), la duración en
+segundos, la categoría y los sinónimos. Reglas del motor:
 
-Capacidades del traductor:
+- Expresiones de varias palabras como una sola entrada: "buenos días" →
+  BUENOS-DÍAS, "hasta mañana" → ADIÓS.
+- "qué" (con tilde) tiene seña; "que" se omite.
+- Cifras: "5" → CINCO; mayores que 10, dígito a dígito ("25" → DOS CINCO).
+- "por" y "entre" son MULTIPLICAR y DIVIDIR solo entre dos números.
+- Lo que no está en el diccionario se deletrea.
 
-- **Expresiones de varias palabras** que en LSC son una sola seña:
-  "buenos días" → BUENOS-DÍAS, "por favor" → POR-FAVOR, "hasta mañana" → ADIÓS.
-- **Interrogativos por tilde**: "qué" → QUÉ pero "que" (conjunción) se omite.
-- **Cifras**: "5" → CINCO; mayores a 10, dígito a dígito ("25" → DOS CINCO).
-- **Operadores contextuales**: "7 por 8" → SIETE MULTIPLICAR OCHO,
-  "10 entre 2" → DIEZ DIVIDIR DOS (solo entre números; en "pasen por el
-  tablero" el "por" se omite).
-- **Dactilología**: palabras fuera del diccionario (nombres propios, palabras
-  técnicas) se deletrean letra por letra con el alfabeto dactilológico
-  (`backend/src/data/alfabeto_dactilologico.json`, 27 letras del español
-  incluida la ñ), en vez de omitirse — "Andrés" → A N D R E S.
+### Agregar una palabra
 
-Ejemplos reales:
+1. Producir el clip y exportarlo en `avatar.glb` con el nombre `LSC_…`
+   (`herramientas/captura-movimiento/README.md`).
+2. Agregar la entrada al JSON con ese mismo nombre en `animacion`.
+3. `npm run sincronizar-duraciones` (falla si el clip no existe en el avatar).
+4. `npm test`: la prueba de consistencia confirma que el clip existe y que la
+   duración coincide.
 
-| Frase | Glosas |
-|---|---|
-| Buenos días estudiantes, bienvenidos a la clase de matemáticas | BUENOS-DÍAS ESTUDIANTE BIENVENIDO CLASE MATEMÁTICAS |
-| ¿Entendieron el tema o tienen alguna pregunta? | ENTENDER TEMA TENER PREGUNTA |
-| ¿Cuánto es 7 por 8? | CUÁNTO SIETE MULTIPLICAR OCHO |
-| Muy bien, terminamos, hasta mañana | BIEN TERMINAR ADIÓS |
-| El niño se llama Andrés | N I Ñ O L L A M A A N D R E S |
+## Avatar y animaciones
 
-Para ampliar el vocabulario solo hay que agregar entradas al JSON (y, cuando
-exista el avatar real, exportar el clip de animación con el mismo ID).
+`frontend/public/modelos/avatar.glb` contiene el avatar (MetaPerson) y sus
+animaciones. De cada seña hay dos: la que usa la aplicación (`LSC_tarea`) y la
+captura sin recortar (`LSC_tarea_mocap_original`), que se conserva como
+respaldo. Más `LSC_reposo`, que se repite cuando no hay seña activa.
 
-## Avatar 3D y animaciones de las señas
-
-Las animaciones tienen tres niveles, de menor a mayor fidelidad:
-
-1. **Poses por keyframes (ya funcionando)**: `frontend/src/data/posesLsc.js`
-   define ~25 señas clave (saludos, sí/no, operaciones, números 0-5,
-   profesor, tarea…) como líneas de tiempo de poses (hombro, codo, muñeca y
-   dedos individuales) que el avatar articulado interpola. Añadir una seña es
-   añadir una entrada de datos, sin Blender.
-2. **Gestos procedurales (automático)**: las señas sin pose definida generan
-   un gesto determinista a partir de su ID, para que toda la secuencia sea
-   visible en la demo.
-3. **Captura de movimiento (la vía definitiva)**: `herramientas/captura-movimiento/`
-   contiene el pipeline video → MediaPipe Holistic → Blender para producir los
-   clips reales a partir de grabaciones de una persona señando, sin animar a
-   mano (ver su README).
-
-Cuando el modelo de MakeHuman/Blender esté listo con sus clips:
-
-1. Exportarlo a `frontend/public/modelos/avatar.glb` (los clips deben llamarse
-   igual que los IDs del diccionario, ej. `LSC_tarea`).
-2. En `EscenaAvatar.jsx`, reemplazar `<Avatar3D />` por `<AvatarGLTF />`
-   (componente ya preparado con `useGLTF` + `useAnimations`).
-
-### Pose de reposo (`LSC_reposo`)
-
-Sin un clip de reposo, el avatar se muestra en la pose de referencia del
-modelo (T-pose) cuando no hay ninguna seña activa, y la transición hacia la
-primera seña se ve como un manotazo extraño (se mezcla desde la T-pose hacia
-el inicio de la seña). Para evitarlo, exporta un clip adicional llamado
-`LSC_reposo`: una pose corta y neutral con los brazos abajo. `AvatarGLTF.jsx`
-la reproduce en bucle por defecto y hace fundidos hacia/desde ella al
-empezar o terminar cada seña.
-
-En Blender, recuerda que el exportador de glTF solo incluye una acción si
-está "empujada" a un strip de NLA (botón *Push Down* en el Action Editor o
-el editor NLA) — con una sola acción activa sin NLA, las demás no se
-incluyen en el archivo exportado.
+El paso de reposo a seña es un corte, no un fundido: al mezclar dos poses muy
+distintas la mano atravesaba el torso. La velocidad elegida (0,75×, 1×, 1,5×)
+se aplica al clip y al temporizador que pasa a la seña siguiente.
 
 ## Despliegue
 
-La forma más sencilla es **un único servicio**: el backend Express sirve la API
-bajo `/api` y, si existe `frontend/dist`, también la aplicación web compilada.
+Un único servicio: Express sirve la API bajo `/api` y, si existe
+`frontend/dist`, también la aplicación compilada.
 
-### Render (gratis, recomendado para la demo)
+### Render
 
-El repositorio incluye `render.yaml`. Pasos:
+El repositorio incluye `render.yaml` (servicio `traduccion-lsc`, plan gratuito,
+verificación en `/api/salud`).
 
-1. Crear cuenta en [render.com](https://render.com) y conectar este repositorio
-   (New → Blueprint).
-2. Render detecta `render.yaml`: compila el frontend, instala el backend y
-   arranca `node src/index.js`.
-3. (Opcional, para la voz) En el panel del servicio, agregar la variable de
-   entorno `OPENAI_API_KEY`.
+1. En [render.com](https://render.com): New → Blueprint, y conectar el repositorio.
+2. Render compila el frontend, instala el backend y arranca `node src/index.js`.
+3. Opcional: agregar `OPENAI_API_KEY` en el panel del servicio.
 
-Notas del plan gratuito: el servicio se duerme tras ~15 minutos sin tráfico y
-la primera petición tarda ~30-60 s en despertarlo; suficiente para demos y
-sustentación. El micrófono funciona porque Render sirve con HTTPS.
+El plan gratuito duerme el servicio tras unos 15 minutos sin tráfico; la
+primera petición después tarda más.
 
-### Probar el modo producción en local
+### Modo producción en local
 
 ```bash
-cd frontend && npm run build   # genera frontend/dist
-cd ../backend && npm start     # sirve web + API en http://localhost:3001
+cd frontend && npm ci && npm run build
+cd ../backend && npm ci && npm start     # http://localhost:3001
 ```
 
-## Hoja de ruta del prototipo
+## Estado del prototipo
 
-- [x] Estructura inicial del proyecto
-- [x] Endpoint `POST /api/traducir`: recibe texto y devuelve secuencia de IDs de animación
-- [x] Diccionario LSC centrado en el aula de matemáticas (83 señas, 6 categorías)
-- [x] Frontend React + Three.js con avatar placeholder que reproduce la secuencia
-- [x] Reconocimiento de voz con Whisper (audio → texto → señas)
-- [x] Diseño responsive (mobile-first) con frases de ejemplo tocables
-- [x] Configuración de despliegue en un solo servicio (`render.yaml`)
-- [x] Voz gratuita con la Web Speech API del navegador (Whisper como respaldo)
-- [x] Avatar articulado con poses por keyframes (~25 señas) y línea de tiempo
-      de glosas con control de velocidad
-- [x] Pipeline de captura de movimiento (video → MediaPipe → Blender)
-- [x] Avatar real (MetaPerson) cargando en el navegador, con la primera seña
-      ("hola") y pose de reposo animadas de punta a punta
-- [x] Dactilología (deletreo) para palabras fuera del diccionario
-- [x] Pruebas automatizadas del motor de traducción (21 pruebas con Vitest)
-- [ ] Grabar/producir el resto de los clips reales de las señas
+- [x] Motor de traducción por diccionario, con deletreo
+- [x] Voz con la Web Speech API y Whisper de respaldo
+- [x] Avatar MetaPerson con las 76 señas y las 27 letras capturadas
+- [x] Páginas Inicio, Traducir, Explorar y Configuración
+- [x] Duraciones del vocabulario iguales a las de los clips, con prueba que lo vigila
+- [x] Despliegue en un solo servicio (`render.yaml`)
+- [ ] Revisión de las señas por un intérprete y por personas sordas
+- [ ] Orden de las glosas, expresión facial

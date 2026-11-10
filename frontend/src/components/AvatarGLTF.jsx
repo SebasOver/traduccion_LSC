@@ -16,11 +16,15 @@ import * as THREE from 'three';
 // se teletransportara metida en el torso.
 const CLIP_REPOSO = 'LSC_reposo';
 
-export default function AvatarGLTF({ animacion, url = '/modelos/avatar.glb', bucle = false }) {
+export default function AvatarGLTF({ animacion, url = '/modelos/avatar.glb', bucle = false, velocidad = 1, repeticion = 0 }) {
   const grupo = useRef();
   const { scene, animations } = useGLTF(url);
   const { actions } = useAnimations(animations, grupo);
   const accionActivaRef = useRef(null);
+  // La velocidad se lee al empezar cada seña; guardarla en una referencia
+  // evita reiniciar el clip en curso cuando el usuario cambia el selector.
+  const velocidadRef = useRef(velocidad);
+  velocidadRef.current = velocidad;
 
   // Pose de reposo en bucle por defecto, si el archivo la trae
   useEffect(() => {
@@ -48,6 +52,10 @@ export default function AvatarGLTF({ animacion, url = '/modelos/avatar.glb', buc
       accion.reset().setLoop(THREE.LoopOnce, 1);
       accion.clampWhenFinished = true;
     }
+    // El clip corre a la misma velocidad que el temporizador del reproductor:
+    // sin esto, a 1,5× la seña se cortaba antes de terminar y a 0,75× quedaba
+    // congelada en su último fotograma.
+    accion.timeScale = velocidadRef.current;
     accion.play();
     accionActivaRef.current = accion;
 
@@ -59,7 +67,9 @@ export default function AvatarGLTF({ animacion, url = '/modelos/avatar.glb', buc
         accionActivaRef.current = reposo;
       }
     };
-  }, [animacion, actions, url, bucle]);
+  // "repeticion" cambia con cada seña de la secuencia: sin ella, dos señas
+  // seguidas con el mismo clip (la doble L de "llama", el 22) se veían como una.
+  }, [animacion, actions, url, bucle, repeticion]);
 
   return <primitive ref={grupo} object={scene} position={[0, -1, 0]} />;
 }

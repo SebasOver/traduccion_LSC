@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 // Reproduce una secuencia de señas una tras otra, respetando la duración
 // (en segundos) de cada una y la velocidad elegida por el usuario.
-// Expone la seña actual (con su duración ya ajustada) para el avatar.
+// Expone la seña actual (con su duración ya ajustada y la velocidad elegida)
+// para que el avatar reproduzca el clip a ese mismo ritmo.
 export function useReproductorSenas(velocidad = 1) {
   const [secuencia, setSecuencia] = useState([]);
   const [indice, setIndice] = useState(-1);
@@ -33,7 +34,7 @@ export function useReproductorSenas(velocidad = 1) {
   const senaActual = useMemo(() => {
     if (!reproduciendo) return null;
     const sena = secuencia[indice];
-    return { ...sena, duracion: (sena.duracion ?? 1.5) / velocidad };
+    return { ...sena, duracion: (sena.duracion ?? 1.5) / velocidad, velocidad, indice };
   }, [reproduciendo, secuencia, indice, velocidad]);
 
   return { reproducir, detener, senaActual, indice, total: secuencia.length, reproduciendo };

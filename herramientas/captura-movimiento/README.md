@@ -25,7 +25,8 @@ frontend/public/modelos/avatar.glb con el clip LSC_xxx
   `mp.solutions` no carga (`AttributeError: module 'mediapipe' has no
   attribute 'solutions'`). Si ya tenías mediapipe instalado y te aparece ese
   error, corre `pip uninstall mediapipe -y && pip install mediapipe==0.10.9`.
-- Blender 3.x o 4.x para la importación y la exportación a glTF
+- Blender para la importación y la exportación a glTF (el `avatar.glb`
+  publicado se exportó con el complemento glTF 5.2 de Blender)
 - Un avatar riguado en formato GLB. Ready Player Me cerró el 31 de enero de
   2026 (adquirido por Netflix); la alternativa recomendada es
   [MetaPerson / Avatar SDK](https://avatarsdk.com/metaperson-creator/)
@@ -77,11 +78,17 @@ frontend/public/modelos/avatar.glb con el clip LSC_xxx
    `frontend/public/modelos/avatar.glb`, con la casilla *Animation* activada.
    Verificar que el nombre de la acción coincide con el ID del diccionario.
 
-7. **Confirmar la duración**: comparar la duración aproximada que imprime el
-   script contra el campo `duracion` de esa seña en
-   `backend/src/data/diccionario_lsc.json` (ya está puesta para todo el
-   vocabulario actual; solo hace falta ajustarla si quedó notablemente
-   distinta).
+7. **Registrar la seña y sincronizar la duración**: agregar la entrada en
+   `backend/src/data/diccionario_lsc.json` con el nombre de la acción en
+   `animacion` y correr, desde `backend/`:
+
+   ```bash
+   npm run sincronizar-duraciones   # copia al JSON la duración real de cada clip
+   npm test                         # confirma que el clip existe y que la duración coincide
+   ```
+
+   El reproductor avanza a la seña siguiente según esa duración; si no es la
+   del clip, la seña se corta o el avatar queda quieto al final.
 
 ## Procesar varias señas de una sola corrida
 

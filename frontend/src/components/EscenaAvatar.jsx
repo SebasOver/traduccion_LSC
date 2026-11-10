@@ -69,7 +69,12 @@ export default function EscenaAvatar({ senaActual, bucle = false }) {
             <directionalLight position={[3, 4, 5]} intensity={1.2} />
             <directionalLight position={[-3, 2, -2]} intensity={0.3} />
             <Suspense fallback={null}>
-              <AvatarGLTF animacion={senaActual?.animacion ?? null} bucle={bucle} />
+              <AvatarGLTF
+                animacion={senaActual?.animacion ?? null}
+                velocidad={senaActual?.velocidad ?? 1}
+                repeticion={senaActual?.indice ?? 0}
+                bucle={bucle}
+              />
               <ContactShadows position={[0, -1, 0]} opacity={0.35} scale={4} blur={2.4} far={1.6} />
             </Suspense>
             {/* dollySpeed más bajo: en la rueda del mouse el zoom por defecto es muy brusco.
